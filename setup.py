@@ -72,7 +72,7 @@ setup(
     'bl.seq.engines',
     'bl.seq.io',
     'bl.seq.mr',
-    'bl.seq.mr.components',
+    'bl.seq.mr.fasta2tab',
     'bl.seq.stats',
     'bl.utils',
     ]

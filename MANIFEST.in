@@ -1,5 +1,8 @@
 include AUTHORS CHANGES COPYING VERSION
 
-include test/seq/io/test_fasta.py
-include test/seq/mr/components/test_fasta_reader.py
-include test/utils/test_pspawner.py
+recursive-include test *
+exclude test/all_tries.py
+exclude test/seq/engines/try_blastall_2_2_21.py
+exclude test/seq/stats/try_karlin_altschul.py
+exclude test/utils/try_pspawner.py
+recursive-exclude test/seq/engines *

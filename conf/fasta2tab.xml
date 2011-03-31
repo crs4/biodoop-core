@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<configuration>
+
+  <property>
+    <name>hadoop.pipes.executable</name>
+    <value>pipes-bin/fasta2tab</value>
+  </property>
+
+  <property>
+    <name>bl.mr.fasta-reader.compress.header</name>
+    <value>false</value>
+  </property>
+
+  <property>
+    <name>bl.mr.fasta-reader.compress.seq</name>
+    <value>true</value>
+  </property>
+
+  <!-- The following parameters should be left alone -->
+  <property>
+    <name>hadoop.pipes.java.recordreader</name>
+    <value>false</value>
+  </property>
+
+  <property>
+    <name>hadoop.pipes.java.recordwriter</name>
+    <value>true</value>
+  </property>
+
+  <property>
+    <name>mapred.reduce.tasks</name>
+    <value>0</value>
+  </property>
+
+</configuration>

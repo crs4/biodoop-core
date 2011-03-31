@@ -4,7 +4,7 @@ import unittest
 from bl.utils.pspawner import ProcessSpawner
 
 
-class Test_build_cmd_line(unittest.TestCase):
+class TestBuildCmdLine(unittest.TestCase):
 
   EXE = "/bin/head"
 
@@ -73,19 +73,15 @@ class Test_build_cmd_line(unittest.TestCase):
     self.__run([arg], opts, "%s --testsep=%s %s" % (self.EXE, val, arg))
 
 
-def suite():
-  suite = unittest.TestSuite()  
-  suite.addTest(Test_build_cmd_line('test_basic'))
-  suite.addTest(Test_build_cmd_line('test_args'))
-  suite.addTest(Test_build_cmd_line('test_default_type'))
-  suite.addTest(Test_build_cmd_line('test_opt_with_val'))
-  suite.addTest(Test_build_cmd_line('test_ignore_None'))
-  suite.addTest(Test_build_cmd_line('test_switch'))
-  suite.addTest(Test_build_cmd_line('test_multi'))
-  suite.addTest(Test_build_cmd_line('test_sep'))
+def load_tests(loader, tests, pattern):
+  test_cases = (TestBuildCmdLine,)
+  suite = unittest.TestSuite()
+  for tc in test_cases:
+    suite.addTests(loader.loadTestsFromTestCase(tc))
   return suite
 
 
 if __name__ == '__main__':
+  suite = load_tests(unittest.defaultTestLoader, None, None)
   runner = unittest.TextTestRunner(verbosity=2)
-  runner.run((suite()))
+  runner.run(suite)

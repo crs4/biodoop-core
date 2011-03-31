@@ -7,7 +7,7 @@ from pydoop._pipes import get_JobConf_object
 from pydoop.hdfs import hdfs
 
 from bl.utils.test_utils import map_context
-from bl.seq.mr.components.fasta_reader import record_reader
+from bl.seq.mr.fasta_reader import record_reader
 
 
 # FIXME: duplicate from test/seq/io/test_fasta.py -----------------------------
@@ -34,7 +34,7 @@ def build_file(seq_tuples):
 # FIXME: end duplicate from test/seq/io/test_fasta.py -------------------------
 
 
-class record_reader_core_tc(unittest.TestCase):
+class TestFastaReader(unittest.TestCase):
 
   def setUp(self):
     self.libhdfs_opts = "-Xmx48m"
@@ -71,27 +71,7 @@ class record_reader_core_tc(unittest.TestCase):
   def tearDown(self):
     self.__remove_data_file()
 
-  def __create_data_file(self):
-    host, port, path = split_hdfs_path(self.data_file_name)
-    fs = hdfs(host, port)
-    f = fs.open_file(path, os.O_WRONLY, 0, 0, 0)
-    f.write(self.f.getvalue())
-    f.close()
-    fs.close()
-
-  def __remove_data_file(self):
-    host, port, path = split_hdfs_path(self.data_file_name)
-    fs = hdfs(host, port)
-    fs.delete(path)
-    fs.close()
-
-  def __make_rr(self, jc_dict, offset, split_size):
-    jc = get_JobConf_object(jc_dict)
-    input_split = make_input_split(self.data_file_name, offset, split_size)
-    map_ctx = map_context(jc, input_split)
-    return map_ctx, record_reader(map_ctx)
-
-  def settable_parameters(self):
+  def test_settable_parameters(self):
     offset, split_size = 0, 1024  # does not matter for this test
     # default
     ctx, rr = self.__make_rr({}, offset, split_size)
@@ -121,13 +101,13 @@ class record_reader_core_tc(unittest.TestCase):
       {'bl.mr.fasta-reader.log.level': "FOO"}, offset, split_size
       )
 
-  def read_all(self):
+  def test_read_all(self):
     print
     self.split_size = self.n * self.l
     self.split_offset = 0
     self.__do_reads_on_split(self.n)
 
-  def read_corner_cases(self):
+  def test_read_corner_cases(self):
     print
     corner_cases = [
       (0, 1, 1),
@@ -140,7 +120,7 @@ class record_reader_core_tc(unittest.TestCase):
     for self.split_offset, self.split_size, n in corner_cases:
       self.__do_reads_on_split(n)
 
-  def no_record(self):
+  def test_no_record(self):
     split_size = self.l - 1
     offset = self.n*self.l - split_size
     ctx, rr = self.__make_rr({}, offset, split_size)
@@ -182,16 +162,36 @@ class record_reader_core_tc(unittest.TestCase):
     self.assertAlmostEqual(rr.getProgress(), 1.0)
     self.assertEqual(self.map_ctx.counters[self.seq_counter_name], n_seqs)
 
+  def __create_data_file(self):
+    host, port, path = split_hdfs_path(self.data_file_name)
+    fs = hdfs(host, port)
+    f = fs.open_file(path, os.O_WRONLY, 0, 0, 0)
+    f.write(self.f.getvalue())
+    f.close()
+    fs.close()
 
-def suite():
+  def __remove_data_file(self):
+    host, port, path = split_hdfs_path(self.data_file_name)
+    fs = hdfs(host, port)
+    fs.delete(path)
+    fs.close()
+
+  def __make_rr(self, jc_dict, offset, split_size):
+    jc = get_JobConf_object(jc_dict)
+    input_split = make_input_split(self.data_file_name, offset, split_size)
+    map_ctx = map_context(jc, input_split)
+    return map_ctx, record_reader(map_ctx)
+
+
+def load_tests(loader, tests, pattern):
+  test_cases = (TestFastaReader,)
   suite = unittest.TestSuite()
-  suite.addTest(record_reader_core_tc('settable_parameters'))
-  suite.addTest(record_reader_core_tc('read_all'))
-  suite.addTest(record_reader_core_tc('read_corner_cases'))
-  suite.addTest(record_reader_core_tc('no_record'))
+  for tc in test_cases:
+    suite.addTests(loader.loadTestsFromTestCase(tc))
   return suite
 
 
 if __name__ == '__main__':
+  suite = load_tests(unittest.defaultTestLoader, None, None)
   runner = unittest.TextTestRunner(verbosity=2)
-  runner.run((suite()))
+  runner.run(suite)

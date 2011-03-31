@@ -28,7 +28,7 @@ def build_file(seq_tuples):
   return f, record_len
 
 
-class Test_find_first_record(unittest.TestCase):
+class TestFindFirstRecord(unittest.TestCase):
 
   def setUp(self):
     self.f, l = build_file(SEQ_TUPLES)
@@ -60,7 +60,7 @@ class TestRawFastaReader(unittest.TestCase):
   def setUp(self):
     self.f, self.l = build_file(SEQ_TUPLES)
     self.n = len(SEQ_TUPLES)
-    #self.offset = 0  # offset != 0 is covered by Test_find_first_record
+    #self.offset = 0  # offset != 0 is covered by TestFindFirstRecord
     
   def __run_test(self, offset, split_size, exp_tuples):
     for bufsize in 1, 15, self.n*self.l:
@@ -106,16 +106,15 @@ class TestRawFastaReader(unittest.TestCase):
     shutil.rmtree(wd)
 
 
-def suite():
-  suite = unittest.TestSuite()  
-  suite.addTest(Test_find_first_record('runTest'))
-  suite.addTest(TestRawFastaReader('test_all'))
-  suite.addTest(TestRawFastaReader('test_partial'))
-  suite.addTest(TestRawFastaReader('test_bad'))
-  suite.addTest(TestRawFastaReader('test_regular_file'))
+def load_tests(loader, tests, pattern):
+  test_cases = (TestFindFirstRecord, TestRawFastaReader)
+  suite = unittest.TestSuite()
+  for tc in test_cases:
+    suite.addTests(loader.loadTestsFromTestCase(tc))
   return suite
 
 
 if __name__ == '__main__':
+  suite = load_tests(unittest.defaultTestLoader, None, None)
   runner = unittest.TextTestRunner(verbosity=2)
-  runner.run((suite()))
+  runner.run(suite)
