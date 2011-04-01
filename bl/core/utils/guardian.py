@@ -58,7 +58,7 @@ def main(master, slave, poll, dbg_file=None):
         except OSError, e:
           if e.errno != 3:  # 3=no such process: died after we checked cmdline
             raise
-      exit(0)
+      sys.exit(0)
     else:
       time.sleep(poll)
 
