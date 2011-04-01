@@ -1,7 +1,7 @@
 # BEGIN_COPYRIGHT
 # END_COPYRIGHT
 import os, tarfile, warnings
-from bl.utils.pspawner import ProcessSpawner
+from bl.core.utils.pspawner import ProcessSpawner
 
 
 class Engine(object):

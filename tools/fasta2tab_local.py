@@ -3,7 +3,7 @@
 # END_COPYRIGHT
 
 import sys, os, shutil
-from bl.seq.io.fasta import RawFastaReader
+from bl.core.seq.io.fasta import RawFastaReader
 
 
 def main(argv):

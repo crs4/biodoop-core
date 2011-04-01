@@ -5,7 +5,7 @@
 import sys, os, optparse, operator
 import matplotlib.pyplot as plt
 
-from bl.seq.io.fasta import RawFastaReader
+from bl.core.seq.io.fasta import RawFastaReader
 
 
 def get_lengths(files):

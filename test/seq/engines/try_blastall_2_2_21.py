@@ -3,7 +3,7 @@
 import sys, subprocess, logging, optparse, urllib2, zlib, time
 logging.basicConfig(level=logging.DEBUG)
 
-from bl.seq.engines.blastall_2_2_21 import Engine
+from bl.core.seq.engines.blastall_2_2_21 import Engine
 
 
 DB = "hg18.fa"

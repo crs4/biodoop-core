@@ -6,8 +6,8 @@ from pydoop.utils import split_hdfs_path, make_input_split
 from pydoop._pipes import get_JobConf_object
 from pydoop.hdfs import hdfs
 
-from bl.utils.test_utils import map_context
-from bl.seq.mr.fasta_reader import record_reader
+from bl.core.utils.test_utils import map_context
+from bl.core.seq.mr.fasta_reader import record_reader
 
 
 # FIXME: duplicate from test/seq/io/test_fasta.py -----------------------------

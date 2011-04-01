@@ -5,7 +5,7 @@ Convert a FASTA dataset to a <HEADER>\t<SEQUENCE> format.
 """
 
 import pydoop.pipes as pp
-from bl.seq.mr.fasta_reader import record_reader
+from bl.core.seq.mr.fasta_reader import record_reader
 from mapper import Mapper
 
 

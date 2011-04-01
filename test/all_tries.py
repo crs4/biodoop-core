@@ -19,4 +19,4 @@ if __name__ == "__main__":
   for i, s in enumerate(get_try_scripts()):
     print "\n* RUNNING %r" % s
     os.system("%s %s" % (sys.executable, s))
-  print "\n* RUN %d scripts" % (i+1)
+  print "\n* RAN %d scripts" % (i+1)

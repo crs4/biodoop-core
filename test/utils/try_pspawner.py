@@ -2,7 +2,7 @@
 # END_COPYRIGHT
 import sys, os, logging
 logging.basicConfig(level=logging.DEBUG)
-from bl.utils.pspawner import ProcessSpawner
+from bl.core.utils.pspawner import ProcessSpawner
 
 
 EXE = "./subprocess.sh"

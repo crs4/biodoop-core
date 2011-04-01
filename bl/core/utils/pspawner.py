@@ -12,10 +12,8 @@ def handler(signum, frame):
 
 
 def find_guardian_exe():
-  f_, path_, desc_, = imp.find_module("bl")
-  f, path, desc = imp.find_module("guardian", ["%s/utils" % path_])
-  f.close()
-  return path
+  D = os.path.dirname(os.path.abspath(__file__))
+  return os.path.join(D, "guardian.py")
 
 
 class OptMapper(object):

@@ -8,8 +8,8 @@ import logging, tempfile, os, shutil, subprocess
 import xml.dom.minidom
 logging.basicConfig(level=logging.DEBUG)
 
-import bl.seq.engines.blastall_2_2_21 as blastall
-from bl.utils.random_ext import sample_wr
+import bl.core.seq.engines.blastall_2_2_21 as blastall
+from bl.core.utils.random_ext import sample_wr
 
 
 class LKCalculator(object):

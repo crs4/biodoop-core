@@ -9,7 +9,7 @@ from pydoop.hdfs import hdfs
 from pydoop.utils import split_hdfs_path, raise_pydoop_exception, \
      jc_configure, jc_configure_bool, jc_configure_int
 
-from bl.seq.io.fasta import RawFastaReader
+from bl.core.seq.io.fasta import RawFastaReader
 
 
 class record_reader(RecordReader):

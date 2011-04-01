@@ -1,7 +1,7 @@
 # BEGIN_COPYRIGHT
 # END_COPYRIGHT
 import logging
-from bl.seq.stats.karlin_altschul import BlastallLKCalculator
+from bl.core.seq.stats.karlin_altschul import BlastallLKCalculator
 
 
 ENGINE_OPTS = {"blastall.program": "blastn"}

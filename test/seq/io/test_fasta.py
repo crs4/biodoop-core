@@ -1,7 +1,7 @@
 # BEGIN_COPYRIGHT
 # END_COPYRIGHT
 import unittest, cStringIO, math, itertools, tempfile, os, shutil
-import bl.seq.io.fasta as faio
+import bl.core.seq.io.fasta as faio
 
 
 # All record titles must be the same size for the seq_size trick to work

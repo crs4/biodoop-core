@@ -9,7 +9,7 @@ level, header compression factor, sequence compression factor.
 """
 
 import sys, os, zlib, itertools
-from bl.seq.io.fasta import RawFastaReader
+from bl.core.seq.io.fasta import RawFastaReader
 
 
 def get_data(fasta_fn):

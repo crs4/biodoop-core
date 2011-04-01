@@ -68,12 +68,13 @@ setup(
   version=VERSION,
   packages=[
     'bl',
-    'bl.seq',
-    'bl.seq.engines',
-    'bl.seq.io',
-    'bl.seq.mr',
-    'bl.seq.mr.fasta2tab',
-    'bl.seq.stats',
-    'bl.utils',
+    'bl.core',
+    'bl.core.seq',
+    'bl.core.seq.engines',
+    'bl.core.seq.io',
+    'bl.core.seq.mr',
+    'bl.core.seq.mr.fasta2tab',
+    'bl.core.seq.stats',
+    'bl.core.utils',
     ]
   )
