@@ -92,6 +92,7 @@ class ProcessSpawner(object):
                          str(master_pid), str(slave_pid)]
     guardian = subprocess.Popen(guardian_cmd_line, bufsize=1)
     self.logger.debug('Created guardian process with pid: %d' % guardian.pid)
+    self.logger.debug('guardian_cmd_line: %r' % guardian_cmd_line)
 
   def run(self, args=[], opts={},
           stdout=None, stderr=None,
@@ -106,6 +107,7 @@ class ProcessSpawner(object):
     self.logger.debug("cmd_line: '%s'" % " ".join(cmd_line))
     self.proc = subprocess.Popen(cmd_line, bufsize=1,
                                  stdout=stdout, stderr=stderr)
+    self.logger.debug("pid: %d" % self.proc.pid)
     if self.create_guardian:
       self.spawn_guardian()
 

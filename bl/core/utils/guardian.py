@@ -35,30 +35,40 @@ def main(master, slave, poll, dbg_file=None):
   master_id = int(master)
   slave_id = int(slave)
   guardian_id = int(os.getpid())
+  sys.stderr.write("guardian (%d): master pid: %d; slave pid: %d\n" %
+                   (guardian_id, master_id, slave_id))
   original_master_cmdline = get_cmdline(master_id)
   original_slave_cmdline = get_cmdline(slave_id)
   guardian_cmdline = get_cmdline(guardian_id)
 
   if dbg_file:
     f = open(dbg_file, 'w')
-    f.write('%d\t%s\n' % (master_id, original_master_cmdline))
-    f.write('%d\t%s\n' % (slave_id, original_slave_cmdline))
-    f.write('%d\t%s' % (guardian_id, guardian_cmdline))
+    f.write('MASTER: %d %r\n' %
+            (master_id, original_master_cmdline.replace("\x00", " ")))
+    f.write('SLAVE: %d %r\n' %
+            (slave_id, original_slave_cmdline.replace("\x00", " ")))
+    f.write('GUARDIAN: %d %r\n' %
+            (guardian_id, guardian_cmdline.replace("\x00", " ")))
     f.close()
   
   while True:
     master_cmdline = get_cmdline(master_id)
-    if master_cmdline != original_master_cmdline:
+    slave_cmdline = get_cmdline(slave_id)
+    if slave_cmdline != original_slave_cmdline:
+      # None: slave is dead; != : slave pid has been recycled
+      sys.stderr.write("guardian (%d): slave (pid %d) is dead, exiting\n"
+                       % (guardian_id, slave_id))
+      break
+    elif master_cmdline != original_master_cmdline:
       # None: master is dead; != : master pid has been recycled
-      slave_cmdline = get_cmdline(slave_id)
-      if slave_cmdline == original_slave_cmdline:
-        sys.stderr.write("guardian: killing pid %d\n" % slave_id)
-        try:
-          os.kill(slave_id, signal.SIGKILL)
-        except OSError, e:
-          if e.errno != 3:  # 3=no such process: died after we checked cmdline
-            raise
-      sys.exit(0)
+      sys.stderr.write("guardian (%d): killing slave (pid %d)\n" %
+                       (guardian_id, slave_id))
+      try:
+        os.kill(slave_id, signal.SIGKILL)
+      except OSError, e:
+        if e.errno != 3:  # 3=no such process: died after we checked cmdline
+          raise
+      break
     else:
       time.sleep(poll)
 
