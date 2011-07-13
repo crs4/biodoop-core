@@ -1,0 +1,4 @@
+2011-07-06    <simleo@neuron.crs4.it>
+
+	* bl/core/utils/guardian.py (main): changed to exit not only when
+	the master is dead, but also when the slave is.

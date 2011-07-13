@@ -102,6 +102,7 @@ setup(
     'bl.core.seq.mr',
     'bl.core.seq.mr.fasta2tab',
     'bl.core.seq.stats',
+    'bl.core.seq.utils',
     'bl.core.utils',
     ],
   cmdclass={"sdist": sdist, "build_py": build_py},
