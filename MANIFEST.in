@@ -5,4 +5,5 @@ exclude test/all_tries.py
 exclude test/seq/engines/try_blastall_2_2_21.py
 exclude test/seq/stats/try_karlin_altschul.py
 exclude test/utils/try_pspawner.py
+exclude test/utils/try_guardian.py
 recursive-exclude test/seq/engines *
