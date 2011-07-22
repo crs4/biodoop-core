@@ -33,6 +33,7 @@ except IOError:
   raise DistutilsSetupError("failed to read version info")
 AUTHOR_INFO = [
   ("Simone Leo", "simone.leo@crs4.it"),
+  ("Luca Pireddu", "luca.pireddu@crs4.it"),
   ("Gianluigi Zanetti", "gianluigi.zanetti@crs4.it"),
   ]
 MAINTAINER_INFO = [

@@ -22,3 +22,18 @@ Core
 
 Currently, Biodoop's core only contains a few modules for handling
 FASTA streams on Hadoop and wrappers for BLAST.
+
+Installation:
+
+#. install `Pydoop <http://pydoop.sourceforge.net>`_
+
+#. unpack the biodoop core tarball, move to the distribution directory
+   and run::
+
+     python setup.py install
+
+   for a system-wide installation, or::
+
+     python setup.py install --user
+
+   for a local installation
