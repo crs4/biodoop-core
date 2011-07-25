@@ -1,3 +1,10 @@
+2011-07-25    <simleo@neuron.crs4.it>
+
+	* bl/core/utils/pspawner.py (ProcessSpawner.run): added an
+	external handler for ChildTerminationError: for reasons we
+	currently don't understand, it sometimes manages to escape the
+	internal one.
+
 2011-07-06    <simleo@neuron.crs4.it>
 
 	* bl/core/utils/guardian.py (main): changed to exit not only when

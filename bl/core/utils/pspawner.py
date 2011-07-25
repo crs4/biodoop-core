@@ -113,30 +113,35 @@ class ProcessSpawner(object):
 
     msg = "pid=%d" % self.proc.pid + "; return code=%r"
     while True:
-      self.proc.poll()
-      self.poll_counter += 1
-      self.logger.debug(msg % self.proc.returncode)
-      if self.proc.returncode is not None:
-        if outsize is not None:
-          outsize += self.__update_stream(outf, outsize, sys.stdout)
-        if errsize is not None:
-          errsize += self.__update_stream(errf, errsize, sys.stderr)
-        return self.proc.returncode
-      else:
-        try:
-          signal.signal(signal.SIGCHLD, handler)
-          time.sleep(self.poll_delta)
-        except ChildTerminationError:
-          self.logger.debug("caught SIGCHLD")
-          continue
-        finally:
-          signal.signal(signal.SIGCHLD, signal.SIG_DFL)
-        if self.update_callback and not self.poll_counter % self.callback_freq:
-          self.update_callback(self.proc.pid)
-        if outsize is not None and not self.poll_counter % out_freq:
-          outsize += self.__update_stream(outf, outsize, sys.stdout)
-        if errsize is not None and not self.poll_counter % err_freq:
-          errsize += self.__update_stream(errf, errsize, sys.stderr)
+      try:
+        self.proc.poll()
+        self.poll_counter += 1
+        self.logger.debug(msg % self.proc.returncode)
+        if self.proc.returncode is not None:
+          if outsize is not None:
+            outsize += self.__update_stream(outf, outsize, sys.stdout)
+          if errsize is not None:
+            errsize += self.__update_stream(errf, errsize, sys.stderr)
+          return self.proc.returncode
+        else:
+          try:
+            signal.signal(signal.SIGCHLD, handler)
+            time.sleep(self.poll_delta)
+          except ChildTerminationError:
+            self.logger.debug("caught SIGCHLD")
+            continue
+          finally:
+            signal.signal(signal.SIGCHLD, signal.SIG_DFL)
+          if (self.update_callback and not
+              self.poll_counter % self.callback_freq):
+            self.update_callback(self.proc.pid)
+          if outsize is not None and not self.poll_counter % out_freq:
+            outsize += self.__update_stream(outf, outsize, sys.stdout)
+          if errsize is not None and not self.poll_counter % err_freq:
+            errsize += self.__update_stream(errf, errsize, sys.stderr)
+      except ChildTerminationError:
+        self.logger.error("bad handler for SIGCHLD")
+        signal.signal(signal.SIGCHLD, signal.SIG_DFL)
 
   def __get_size(self, f):
     if hasattr(f, "fileno"):

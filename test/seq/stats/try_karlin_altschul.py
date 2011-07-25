@@ -1,15 +1,28 @@
 # BEGIN_COPYRIGHT
 # END_COPYRIGHT
-import logging
+import sys, logging
+from subprocess import Popen, PIPE
 from bl.core.seq.stats.karlin_altschul import BlastallLKCalculator
 
 
 ENGINE_OPTS = {"blastall.program": "blastn"}
 
 
+formatdb_exe, err = Popen("which formatdb", shell=True,
+                          stdout=PIPE, stderr=PIPE).communicate()
+if err:
+  sys.exit("formatdb executable not found")
+formatdb_exe = formatdb_exe.strip()
+blastall_exe, err = Popen("which blastall", shell=True,
+                          stdout=PIPE, stderr=PIPE).communicate()
+if err:
+  sys.exit("blastall executable not found")
+blastall_exe = blastall_exe.strip()
+
+
 calculator = BlastallLKCalculator(
-  "/usr/bin/formatdb",
-  "/usr/bin/blastall",
+  formatdb_exe,
+  blastall_exe,
   log_level=logging.DEBUG,
   engine_opts=ENGINE_OPTS,
   )
