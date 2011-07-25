@@ -19,7 +19,8 @@ else:
     sys.exit(0)
 
 
-guardian_exe = "../../bl/core/utils/guardian.py"
+guardian_exe = os.path.join(os.path.dirname(__file__),
+                            "../../bl/core/utils/guardian.py")
 for i in xrange(5):
   stdout = open("p%d.out" % i, "w")
   stderr = open("p%d.err" % i, "w")
