@@ -35,7 +35,7 @@ docs_py: install_user_py
 	make -C docs html
 
 docs_put: docs
-	rsync -avz --delete -e ssh docs/_build/html/ ${USER},biodoop@web.sourceforge.net:/home/project-web/biodoop/htdocs/docs/
+	rsync -avz --delete -e ssh docs/_build/html/ ${USER},biodoop@web.sourceforge.net:/home/project-web/biodoop/htdocs/core/
 
 docs_view: docs
 	yelp docs/_build/html/index.html &

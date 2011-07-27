@@ -21,13 +21,15 @@ Core
 ----
 
 Currently, Biodoop's core only contains a few modules for handling
-FASTA streams on Hadoop and wrappers for BLAST.
+FASTA streams and wrappers for BLAST.
 
 Installation:
 
 #. install `Pydoop <http://pydoop.sourceforge.net>`_
 
-#. unpack the biodoop core tarball, move to the distribution directory
+#. get biodoop-core from the `download page <https://sourceforge.net/projects/biodoop/files/>`_
+
+#. unpack the biodoop-core tarball, move to the distribution directory
    and run::
 
      python setup.py install
@@ -37,3 +39,11 @@ Installation:
      python setup.py install --user
 
    for a local installation
+
+
+BLAST
+-----
+
+The BLAST package provides a wrapper-based MapReduce implementation of
+BLAST for Hadoop. See the `Biodoop-BLAST
+<http://biodoop.sourceforge.net/blast>`_ documentation for details.
