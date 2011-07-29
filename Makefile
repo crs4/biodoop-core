@@ -1,7 +1,8 @@
 EXPORT_DIR = svn_export
+APP = $(shell cat NAME)
 COPYRIGHT_OWNER = CRS4
 NOTICE_TEMPLATE = notice_template.txt
-COPYRIGHTER = copyrighter -n $(NOTICE_TEMPLATE) $(COPYRIGHT_OWNER)
+COPYRIGHTER = copyrighter -p $(APP) -n $(NOTICE_TEMPLATE) $(COPYRIGHT_OWNER)
 # install copyrighter >=0.4.0 from ac-dc/tools/copyrighter
 
 GENERATED_FILES = AUTHORS MANIFEST README bl/core/version.py
