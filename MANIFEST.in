@@ -1,4 +1,4 @@
-include AUTHORS CHANGES COPYING VERSION
+include AUTHORS CHANGES COPYING NAME VERSION
 
 recursive-include test *
 exclude test/all_tries.py

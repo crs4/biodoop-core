@@ -12,7 +12,6 @@ from distutils.command.sdist import sdist as du_sdist
 
 CURRENT_YEAR = datetime.datetime.now().year
 
-NAME = 'biodoop-core'
 DESCRIPTION, LONG_DESCRIPTION = __doc__.split("\n", 1)
 LONG_DESCRIPTION = LONG_DESCRIPTION.strip()
 URL = "http://biodoop.sourceforge.net"
@@ -27,10 +26,12 @@ CLASSIFIERS = [
   ]
 PLATFORMS = ["Linux"]
 try:
+  with open("NAME") as f:
+    NAME = f.read().strip()
   with open("VERSION") as f:
     VERSION = f.read().strip()
 except IOError:
-  raise DistutilsSetupError("failed to read version info")
+  raise DistutilsSetupError("failed to read name/version info")
 AUTHOR_INFO = [
   ("Simone Leo", "simone.leo@crs4.it"),
   ("Luca Pireddu", "luca.pireddu@crs4.it"),
