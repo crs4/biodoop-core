@@ -51,6 +51,7 @@ clean:
 	rm -rf build
 	rm -f $(GENERATED_FILES)
 	make -C docs clean
+	cd test && rm -fv *.{out,err,log}
 	find . -regex '.*\(\.pyc\|\.pyo\|~\|\.so\)' -exec rm -fv {} \;
 
 distclean: clean
