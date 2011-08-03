@@ -38,7 +38,10 @@ COMPLEMENT = {  # http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html
 
 
 def reverse_complement(seq):
-  rc = [COMPLEMENT.get(c,c) for c in reversed(seq)]
+  rc_it = (COMPLEMENT.get(c, c) for c in reversed(seq))
   if isinstance(seq, basestring):
-    rc = "".join(rc)
-  return rc
+    return "".join(rc_it)
+  elif isinstance(seq, tuple):
+    return tuple(rc_it)
+  else:
+    return list(rc_it)

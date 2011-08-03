@@ -17,6 +17,5 @@ def sample_wr(population, k):
   return [population[_int(_random()*n)] for _ in itertools.repeat(None, k)]
 
 
-def random_string(len=RAND_STR_LEN):
-  choice = random.choice  # speed hack
-  return "".join(choice(RAND_STR_POOL) for _ in xrange(RAND_STR_LEN))
+def random_string(len=RAND_STR_LEN, pool=RAND_STR_POOL):
+  return "".join(sample_wr(pool, len))

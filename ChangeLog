@@ -1,3 +1,12 @@
+2011-08-03    <simleo@neuron.crs4.it>
+
+	* bl/core/seq/utils/baseops.py (reverse_complement): changed to
+	return a tuple when the input sequence is a tuple.
+
+	* bl/core/utils/random_ext.py (random_string): fixed hardwiring of
+	'len'; added a 'pool' param to provide a custom pool;
+	reimplemented with sample_wr (now it's twice as fast).
+
 2011-07-29    <simleo@neuron.crs4.it>
 
 	* bl/core/utils/longest_subs.py: added.
