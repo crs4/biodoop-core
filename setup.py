@@ -108,6 +108,7 @@ setup(
   packages=[
     'bl',
     'bl.core',
+    'bl.core.readers',
     'bl.core.seq',
     'bl.core.seq.engines',
     'bl.core.seq.io',

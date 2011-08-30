@@ -1,3 +1,8 @@
+2011-08-30    <zag@manzanillo>
+
+	* bl/core/readers/abi.py (SDSReader): Added a class to read Abi
+	SDS 2.3 (txt) files.
+
 2011-08-03    <simleo@neuron.crs4.it>
 
 	* bl/core/seq/utils/baseops.py (reverse_complement): changed to
