@@ -1,5 +1,6 @@
 import csv
 import cStringIO
+from datetime import datetime
 
 class SDSReader(csv.DictReader):
   """
@@ -8,6 +9,8 @@ class SDSReader(csv.DictReader):
   .. code-block:: python
 
     >>> sds = SDSReader(open('foo.txt'))
+    >>> for m,v in sds.header['markers_info'].iteritems():
+          print 'marker %s: %s' % (m, v)
     >>> for r in sds:
           if r['HMD'] or r['FOS'] or r['LME'] or r['EW'] or r['BPR']:
              print r
@@ -48,7 +51,10 @@ class SDSReader(csv.DictReader):
    reporter dye signal to the fluorescence intensity of the passive
    reference dye signal.
   """
-  def __init__(self, file_object):
+  def __init__(self, file_object, swap_sample_well_columns=False):
+    """
+    FIXME
+    """
     magic = file_object.readline()
     if not magic.startswith('SDS 2.3\tAD Results\t1.0'):
       raise ValueError('%s is not an SDS 2.3 AD file' % file_object.name)
@@ -56,6 +62,7 @@ class SDSReader(csv.DictReader):
     header = []
     mark = file_object.tell()
     l = file_object.readline()
+    self.swap_sample_well_columns = swap_sample_well_columns
 
     while not l.startswith('Well\tSample Name\tMarker Name'):
       mark = file_object.tell()
@@ -66,7 +73,17 @@ class SDSReader(csv.DictReader):
       file_object.seek(mark)
     csv.DictReader.__init__(self, file_object, delimiter='\t')
 
+  @property
+  def datetime(self):
+    date, time = self.header['params']['Run DateTime'].split(' ')
+    day, month, year = map(int, date.split('/'))
+    hour, minute, sec = map(int, time.split('.'))
+    return datetime(year + 2000, month, day, hour, minute, sec)
+
+
   def __process_header(self, header_txt):
+    # FIXME this is ms-dos sanitation
+    header_txt = header_txt.replace('\r','')
     header = {}
     p_info, tail = header_txt.split('Sample Information\n')
     s_info, m_info = tail.split('Marker Setting Information\n')
@@ -83,11 +100,24 @@ class SDSReader(csv.DictReader):
     f = csv.DictReader(cStringIO.StringIO(m_info), delimiter='\t')
     markers_info = {}
     for r in f:
-      name = r['Marker Name']
+      name = r['Marker Name'].strip()
       del r['Marker Name']
       for k in ['NOC', 'HW', 'SNS', 'DCN']:
         r[k] = r[k] == 'True'
-      r['Quality Value Threshold'] = float(r['Quality Value Threshold'])
       markers_info[name] = r
     header['markers_info'] = markers_info
     return header
+
+  def next(self):
+    r = csv.DictReader.next(self)
+    # filter out the 'per SNP header'
+    if r['Well'] == 'Well':
+      return self.next()
+    if self.swap_sample_well_columns:
+      r['Well'], r['Sample Name'] = r['Sample Name'].strip(), r['Well'].strip()
+    if '' in r:
+      del r['']
+    for k in ['Quality Value', 'Allele X Rn', 'Allele Y Rn',
+              'Passive Ref']:
+      r[k] = float(r[k])
+    return r

@@ -1,0 +1,11 @@
+package core_messages;
+
+message KeyValue {
+  required string key = 1;
+  required string value = 2;
+}
+
+message MessageStreamHeader {
+  repeated KeyValue key_value = 1;
+}
+

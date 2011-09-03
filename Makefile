@@ -7,14 +7,20 @@ COPYRIGHTER = copyrighter -p $(APP) -n $(NOTICE_TEMPLATE) $(COPYRIGHT_OWNER)
 
 GENERATED_FILES = AUTHORS MANIFEST README bl/core/version.py
 
-.PHONY: all build build_py install install_py install_user install_user_py docs docs_py docs_put docs_view dist clean distclean
+PROTOBUF_SRC_DIRS := bl/core/messages
+
+
+.PHONY: all build build_proto build_py install install_py install_user install_user_py docs docs_py docs_put docs_view dist clean distclean
 
 all: build
 
-build:
+build: build_proto
 	python setup.py build
 
-build_py:
+build_proto:
+	for d in ${PROTOBUF_SRC_DIRS}; do make -C $${d};  done
+
+build_py: build_proto
 	python setup.py build_py
 
 install: build

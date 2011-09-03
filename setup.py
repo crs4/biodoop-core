@@ -108,7 +108,9 @@ setup(
   packages=[
     'bl',
     'bl.core',
-    'bl.core.readers',
+    'bl.core.io',
+    'bl.core.messages',
+    'bl.core.messages.details',
     'bl.core.seq',
     'bl.core.seq.engines',
     'bl.core.seq.io',

@@ -1,3 +1,27 @@
+2011-09-03    <zag@manzanillo>
+
+	* bl/core/io/message_stream.py (MessageStreamWriter): Added a
+	class to write sequences of messages to a stream (a file for the
+	time being).
+	(MessageStreamReader): Added a class to read sequences of messages
+	from a stream (a file for the time being).
+
+	* bl/core/messages/MessageStreamHeader.py: Added a
+	MessageStreamHeader object.
+
+	* bl/core/messages/registry.py (MessageCodecInfo): added a naive
+	facility for Message Codecs management.
+
+	* Makefile (PROTOBUF_SRC_DIRS): Added support for protobuf proto files
+	compiling.
+
+	* bl/core/io/blob_stream.py (BlobStream): Added a class to manage
+	the writing of a sequence of strings blobs to a file.
+
+2011-09-02    <zag@manzanillo>
+
+	* bl/core/io/abi.py: Moved from readers to io. Deleted 'readers'
+
 2011-08-30    <zag@manzanillo>
 
 	* bl/core/readers/abi.py (SDSReader): Added a class to read Abi

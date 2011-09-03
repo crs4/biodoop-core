@@ -1,0 +1,8 @@
+package core_messages;
+
+message Dummy {
+  required string  a_string = 1;
+  required int32   a_int    = 2;
+  required float a_float  = 3;
+}
+
