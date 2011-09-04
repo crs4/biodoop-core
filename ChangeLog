@@ -1,3 +1,8 @@
+2011-09-04    <zag@manzanillo>
+
+	* bl/core/gt/messages/SampleSnpCall.py: Added a message to encode
+	SnpCall on a sample.
+
 2011-09-03    <zag@manzanillo>
 
 	* bl/core/io/message_stream.py (MessageStreamWriter): Added a

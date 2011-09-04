@@ -1,0 +1,26 @@
+package core_gt_messages;
+
+enum SnpCall {
+  sc_A = 0;
+  sc_B = 1;
+  sc_AA = 2;
+  sc_AB = 3;
+  sc_BB = 4;
+  sc_NOCALL = 5;
+  sc_MAXCALLCODE=6;
+};
+
+// note: w_AA, w_AB, w_BB are float64 out of the birdseed genotype caller
+// however, for our purposes, a float32 should be enough
+message SampleSnpCall {
+  required string sample_id = 1;
+  required string snp_id = 2;
+  required SnpCall call = 3;
+  required float confidence = 4;
+  required float sig_A = 5;
+  required float sig_B = 6;
+  required float w_AA = 7;
+  required float w_AB = 8;
+  required float w_BB = 9;
+};
+
