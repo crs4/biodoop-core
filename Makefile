@@ -18,7 +18,7 @@ build: build_proto
 	python setup.py build
 
 build_proto:
-	for d in ${PROTOBUF_SRC_DIRS}; do make -C $${d};  done
+	for d in ${PROTOBUF_SRC_DIRS}; do make -C $${d}; done
 
 build_py: build_proto
 	python setup.py build_py
@@ -57,6 +57,7 @@ dist: docs
 clean:
 	rm -rf build
 	rm -f $(GENERATED_FILES)
+	for d in ${PROTOBUF_SRC_DIRS}; do make -C $${d} clean; done
 	make -C docs clean
 	cd test && rm -fv *.{out,err,log}
 	find . -regex '.*\(\.pyc\|\.pyo\|~\|\.so\)' -exec rm -fv {} \;

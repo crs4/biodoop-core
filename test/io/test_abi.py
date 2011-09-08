@@ -4,14 +4,17 @@
 # FIXME: This is not really a test. Just checking that it is
 # exporting the right interface.
 
-import unittest
-
+import unittest, os
 from bl.core.io.abi import SDSReader
+
+
+D = os.path.dirname(os.path.abspath(__file__))
+
 
 class test_sds_reader(unittest.TestCase):
 
   def open_file(self):
-    sds_fname = 'data/taq_man_ex1.txt'
+    sds_fname = os.path.join(D, 'data', 'taq_man_ex1.txt')
     sds = SDSReader(open(sds_fname), swap_sample_well_columns=True)
     print sds.datetime
     print sds.fieldnames
@@ -28,6 +31,7 @@ class test_sds_reader(unittest.TestCase):
 
   def runTest(self):
     self.open_file()
+
 
 def load_tests(loader, tests, pattern):
   test_cases = (test_sds_reader,)
