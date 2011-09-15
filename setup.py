@@ -113,6 +113,7 @@ setup(
     'bl.core.messages.details',
     'bl.core.seq',
     'bl.core.seq.engines',
+    'bl.core.seq.align',
     'bl.core.seq.io',
     'bl.core.seq.mr',
     'bl.core.seq.mr.fasta2tab',
