@@ -1,14 +1,15 @@
 # BEGIN_COPYRIGHT
 # END_COPYRIGHT
 
-import unittest
-import copy
+import unittest, copy
+from itertools import izip
 
-from bl.core.seq.align.mapping import SimpleMapping
+from bl.core.seq.align.mapping import SimpleMapping, SAMMapping
 from bl.core.seq.align.sam_flags import *
 
 
 class TestMapping(unittest.TestCase):
+  
   def setUp(self):
     self.mapping = SimpleMapping()
 
@@ -203,8 +204,37 @@ class TestMapping(unittest.TestCase):
     self.assertTrue(m.is_mate_mapped()) # make sure the bit ISN'T set
 
 
+class TestSAMMapping(unittest.TestCase):
+  
+  SEQ = 'AGCTTCTTTGACTCTCGAATTTTAGCACTAGAAGAAATAGTGAGGATTATATATTTCAGAAGTTCTCACCCAGGATATCAGAACACATTCA'
+  QUAL = '5:CB:CCBCCB>:C@;BBBB??B;?>1@@=C=4ACCAB3A8=CC=C?CBC=CBCCCCCCCCCCCCC@5>?=?CAAB=3=>====5>=AC?C'
+  SAM_FIELDS = [
+    'FOO/1', '81', 'chr6', '3558357', '37', '5M1I85M', '*', '0', '0', SEQ,
+    QUAL, 'XT:A:U', 'NM:i:0', 'SM:i:37', 'AM:i:0', 'X0:i:1', 'X1:i:0',
+    'XM:i:0', 'XO:i:0', 'XG:i:0', 'MD:Z:91'
+    ]
+  
+  def setUp(self):
+    self.mapping = SAMMapping(self. SAM_FIELDS)
+
+  def runTest(self):
+    self.assertEqual(self.mapping.get_name(), "FOO/1")
+    self.assertEqual(self.mapping.flag, 81)
+    self.assertEqual(self.mapping.rname, "chr6")
+    self.assertEqual(self.mapping.pos, 3558356)
+    self.assertEqual(self.mapping.qual, 37)
+    self.assertEqual(self.mapping.get_cigar(), [(5, 'M'), (1, 'I'), (85, 'M')])
+    self.assertTrue(self.mapping.mtid is None)
+    self.assertEqual(self.mapping.mpos, -1)
+    self.assertEqual(self.mapping.isize, 0)
+    self.assertEqual(self.mapping.get_seq_5(), self.SEQ)
+    self.assertEqual(self.mapping.get_ascii_base_qual(), self.QUAL)
+    for t, tstr in izip(self.mapping.each_tag(), self.SAM_FIELDS[11:]):
+      self.assertEqual(t, tuple(tstr.split(":")))
+
+
 def load_tests(loader, tests, pattern):
-  test_cases = (TestMapping,)
+  test_cases = (TestMapping, TestSAMMapping)
   suite = unittest.TestSuite()
   for tc in test_cases:
     suite.addTests(loader.loadTestsFromTestCase(tc))

@@ -1,3 +1,8 @@
+2011-09-16    <simleo@neuron.crs4.it>
+
+	* test/seq/align/test_mapping.py: added a class for storing SAM
+	records.
+
 2011-09-04    <zag@manzanillo>
 
 	* bl/core/gt/messages/SampleSnpCall.py: Added a message to encode

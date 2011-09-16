@@ -1,10 +1,10 @@
 # BEGIN_COPYRIGHT
 # END_COPYRIGHT
 
-from sam_flags import *
-
+import re, array
 from itertools import izip
-import array
+
+from sam_flags import *
 
 
 class Mapping(object):
@@ -88,7 +88,6 @@ class Mapping(object):
     if not hasattr(self, "__untrimmed_pos"):
       if self.is_unmapped():
         raise ValueError("sequence is not mapped")
-
       upos = self.pos
       if self.is_on_reverse():
         clip_len = self.tag_value("XC") or self.get_seq_len()
@@ -291,3 +290,53 @@ class SimpleMapping(Mapping):
 
   def get_seq_len(self):
     return len(self.__seq)
+
+
+class SAMMapping(Mapping):
+  """
+  A mapping implementation for storing SAM data.
+
+  A ``SAMMapping`` object is constructed from a list of SAM fields --
+  see http://samtools.sourceforge.net
+  """
+
+  CIGAR_PATTERN = re.compile(r"(\d+)([MIDNSHP])")
+  
+  def __init__(self, sam_fields):
+    super(SAMMapping, self).__init__()
+    self.__name = sam_fields[0]
+    self.flag = int(sam_fields[1])
+    self.rname = sam_fields[2]
+    self.pos = int(sam_fields[3]) - 1
+    self.qual = int(sam_fields[4])
+    self.__cigar = [(int(n), c) for (n, c) in
+                    self.CIGAR_PATTERN.findall(sam_fields[5])]
+    if sam_fields[6] == '*':  # is this BWA-specific?
+      self.mtid = None
+    else:
+      self.mtid = sam_fields[6]
+    self.mpos = int(sam_fields[7]) - 1
+    self.isize = int(sam_fields[8])
+    self.__seq = sam_fields[9]
+    self.__ascii_base_qual = sam_fields[10]
+    self.__tags = [tuple(t.split(":")) for t in sam_fields[11:]]
+
+  def get_name(self):
+    return self.__name
+
+  def get_seq_5(self):
+    return self.__seq
+
+  def get_base_qualities(self):
+    if not hasattr(self, '__base_qual'):
+      self.__base_qual = array.array(
+        'B', [ord(q) - 33 for q in self.__ascii_base_qual]
+        )
+    return self.__base_qual
+
+  def get_cigar(self):
+    return self.__cigar
+
+  def each_tag(self):
+    for t in self.__tags:
+      yield t
