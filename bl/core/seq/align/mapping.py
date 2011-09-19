@@ -306,7 +306,7 @@ class SAMMapping(Mapping):
     super(SAMMapping, self).__init__()
     self.__name = sam_fields[0]
     self.flag = int(sam_fields[1])
-    self.rname = sam_fields[2]
+    self.tid = sam_fields[2]
     self.pos = int(sam_fields[3]) - 1
     self.qual = int(sam_fields[4])
     self.__cigar = [(int(n), c) for (n, c) in

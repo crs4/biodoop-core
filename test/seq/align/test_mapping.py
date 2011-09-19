@@ -220,7 +220,7 @@ class TestSAMMapping(unittest.TestCase):
   def runTest(self):
     self.assertEqual(self.mapping.get_name(), "FOO/1")
     self.assertEqual(self.mapping.flag, 81)
-    self.assertEqual(self.mapping.rname, "chr6")
+    self.assertEqual(self.mapping.tid, "chr6")
     self.assertEqual(self.mapping.pos, 3558356)
     self.assertEqual(self.mapping.qual, 37)
     self.assertEqual(self.mapping.get_cigar(), [(5, 'M'), (1, 'I'), (85, 'M')])
