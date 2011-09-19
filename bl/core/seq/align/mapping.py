@@ -307,7 +307,7 @@ class SAMMapping(Mapping):
     self.__name = sam_fields[0]
     self.flag = int(sam_fields[1])
     self.tid = sam_fields[2]
-    self.pos = int(sam_fields[3]) - 1
+    self.pos = int(sam_fields[3])
     self.qual = int(sam_fields[4])
     self.__cigar = [(int(n), c) for (n, c) in
                     self.CIGAR_PATTERN.findall(sam_fields[5])]
@@ -315,7 +315,7 @@ class SAMMapping(Mapping):
       self.mtid = None
     else:
       self.mtid = sam_fields[6]
-    self.mpos = int(sam_fields[7]) - 1
+    self.mpos = int(sam_fields[7])
     self.isize = int(sam_fields[8])
     self.__seq = sam_fields[9]
     self.__ascii_base_qual = sam_fields[10]
