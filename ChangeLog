@@ -1,3 +1,8 @@
+2011-09-27    <zag@manzanillo>
+
+	* bl/core/io/message_stream.py (MessageStreamWriter.write): Now we
+	magically convert dict to whatever arguments the payload encode expects.
+
 2011-09-19    <simleo@neuron.crs4.it>
 
 	* bl/core/seq/align/mapping.py (SAMMapping): changed to return

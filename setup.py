@@ -108,6 +108,9 @@ setup(
   packages=[
     'bl',
     'bl.core',
+    'bl.core.gt',
+    'bl.core.gt.messages',
+    'bl.core.gt.messages.details',
     'bl.core.io',
     'bl.core.messages',
     'bl.core.messages.details',

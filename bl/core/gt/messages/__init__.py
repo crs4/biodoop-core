@@ -2,10 +2,13 @@
 Messages conversion utilities.
 """
 
-import registry
+import bl.core.messages.registry
 
 # the following will automagically register the relevant message codecs
-import MessageStreamHeader
-import Dummy
+from SampleSnpCall import SampleSnpCall
+
+
+
+
 
 

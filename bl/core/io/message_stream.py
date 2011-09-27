@@ -40,7 +40,7 @@ class MessageStreamWriter(BlobStreamWriter):
     super(MessageStreamWriter, self).write(header_msg.SerializeToString())
 
   def write(self, payload):
-    msg = self.pc_info.encoder.encode(payload)
+    msg = self.pc_info.encoder.encode(**payload)
     super(MessageStreamWriter, self).write(msg.SerializeToString())
 
 class MessageStreamReader(BlobStreamReader):
