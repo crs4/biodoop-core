@@ -25,6 +25,11 @@ FASTA streams and wrappers for BLAST.
 
 Installation:
 
+**FIXME** update dependencies:
+
+ * protobuf
+ * numpy
+
 #. install `Pydoop <http://pydoop.sourceforge.net>`_
 
 #. get biodoop-core from the `download page <https://sourceforge.net/projects/biodoop/files/>`_

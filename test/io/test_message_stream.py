@@ -4,12 +4,11 @@
 # FIXME: This is not really a test. Just checking that it is
 # exporting the right interface.
 
-import unittest, tempfile, os, random
+import unittest, tempfile, os
 import itertools as it
 
-import random
-
 from bl.core.io.message_stream import MessageStreamWriter, MessageStreamReader
+
 
 class test_message_stream(unittest.TestCase):
 
@@ -98,6 +97,7 @@ class test_message_stream(unittest.TestCase):
     self.header()
     self.payload_1()
     self.payload_2()
+
 
 def load_tests(loader, tests, pattern):
   test_cases = (test_message_stream,)

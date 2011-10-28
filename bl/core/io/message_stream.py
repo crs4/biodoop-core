@@ -18,7 +18,7 @@ What  we would like to do is::
   possible to pass an already opened stream instead of only a fname.
 
 """
-
+import collections
 from blob_stream import BlobStreamWriter, BlobStreamReader
 from bl.core.messages.registry import message_codecs_registry as CDSREG
 
@@ -40,7 +40,12 @@ class MessageStreamWriter(BlobStreamWriter):
     super(MessageStreamWriter, self).write(header_msg.SerializeToString())
 
   def write(self, payload):
-    msg = self.pc_info.encoder.encode(**payload)
+    if isinstance(payload, collections.Mapping):
+      msg = self.pc_info.encoder.encode(**payload)
+    elif isinstance(payload, collections.Sequence):
+      msg = self.pc_info.encoder.encode(*payload)
+    else:
+      raise TypeError("payload must be either a sequence or a mapping")
     super(MessageStreamWriter, self).write(msg.SerializeToString())
 
 class MessageStreamReader(BlobStreamReader):
