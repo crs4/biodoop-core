@@ -108,6 +108,12 @@ class SDSReader(csv.DictReader):
     markers_info = {}
     for r in f:
       name = r['Marker Name'].strip()
+      if name.count('-C')==1:
+        name = name[name.index('-C')+1:]
+      if name.count('_pos')==1:
+        name = name[:name.index('_pos')]
+      if name.count('pos')==1:
+        name = name[:name.index('pos')]
       del r['Marker Name']
       for k in ['NOC', 'HW', 'SNS', 'DCN']:
         r[k] = r[k] == 'True'
