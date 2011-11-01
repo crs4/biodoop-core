@@ -78,10 +78,12 @@ class SDSReader(csv.DictReader):
     if self.header['params']['Run DateTime'].count('AM')!=0 or self.header['params']['Run DateTime'].count('PM')!=0:
       date, time, ap  = self.header['params']['Run DateTime'].split(' ')
       month, day, year = map(int, date.split('/'))
-      hour, minute, sec = map(int, time.split(':'))
     else:
       date, time  = self.header['params']['Run DateTime'].split(' ')
       day, month, year = map(int, date.split('/'))
+    if self.header['params']['Run DateTime'].count(':')!=0:
+      hour, minute, sec = map(int, time.split(':'))
+    else:
       hour, minute, sec = map(int, time.split('.'))
     return datetime(year + 2000, month, day, hour, minute, sec)
 
