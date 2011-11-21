@@ -1,5 +1,6 @@
 import csv, re
 
+
 class GenomeStudioFinalReport(object):
   """
 
@@ -11,7 +12,6 @@ class GenomeStudioFinalReport(object):
     r.sample_id
 
   """
-
   def __init__(self, sample_id, block):
     self.sample_id = sample_id
     snp = {}
@@ -42,8 +42,6 @@ class GenomeStudioFinalReportReader(csv.DictReader):
         print b.snp[k]
 
   """
-
-
   def __init__(self, file_object):
     """
     FIXME
@@ -103,3 +101,19 @@ class GenomeStudioFinalReportReader(csv.DictReader):
     return sample_iterator(self)
 
 
+class IllSNPReader(csv.DictReader):
+  """
+  Reads Illumina SNP annotation files.
+  """
+  def __init__(self, f):
+    def ill_filter(f):
+      open = False
+      for line in f:
+        if line.startswith('[Assay]'):
+          open = True
+          continue
+        elif line.startswith('[Controls]'):
+          open = False
+        if open:
+          yield line
+    csv.DictReader.__init__(self, ill_filter(f))
