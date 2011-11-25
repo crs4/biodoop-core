@@ -48,6 +48,7 @@ class MessageStreamWriter(BlobStreamWriter):
       raise TypeError("payload must be either a sequence or a mapping")
     super(MessageStreamWriter, self).write(msg.SerializeToString())
 
+
 class MessageStreamReader(BlobStreamReader):
 
   def __init__(self, fname):
@@ -59,6 +60,9 @@ class MessageStreamReader(BlobStreamReader):
     hmsg.ParseFromString(hmsg_s)
     header = self.hc_info.decoder.decode(hmsg)
     self.pc_info = CDSREG.lookup(header['payload_msg_type'])
+    if self.pc_info is None:
+      raise ValueError("unknown payload msg type %r"
+                       % (header['payload_msg_type'],))
     del(header['payload_msg_type'])
     self.header = header
 

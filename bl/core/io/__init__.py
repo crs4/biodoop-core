@@ -3,3 +3,7 @@
 
 from message_stream import MessageStreamWriter
 from message_stream import MessageStreamReader
+
+
+# import modules that register codecs
+import bl.core.gt.messages.SampleSnpCall
