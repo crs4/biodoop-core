@@ -1,3 +1,6 @@
+PYTHON = python
+export PROTOC = protoc
+
 EXPORT_DIR = svn_export
 APP = $(shell cat NAME)
 COPYRIGHT_OWNER = CRS4
@@ -15,25 +18,25 @@ PROTOBUF_SRC_DIRS := bl/core/messages bl/core/gt/messages
 all: build
 
 build: build_proto
-	python setup.py build
+	$(PYTHON) setup.py build
 
 build_proto:
-	for d in ${PROTOBUF_SRC_DIRS}; do make -C $${d}; done
+	for d in $(PROTOBUF_SRC_DIRS); do make -e -C $${d}; done
 
 build_py: build_proto
-	python setup.py build_py
+	$(PYTHON) setup.py build_py
 
 install: build
-	python setup.py install --skip-build
+	$(PYTHON) setup.py install --skip-build
 
 install_py: build_py
-	python setup.py install --skip-build
+	$(PYTHON) setup.py install --skip-build
 
 install_user: build
-	python setup.py install --skip-build --user
+	$(PYTHON) setup.py install --skip-build --user
 
 install_user_py: build_py
-	python setup.py install --skip-build --user
+	$(PYTHON) setup.py install --skip-build --user
 
 docs: install_user
 	make -C docs html
@@ -52,12 +55,12 @@ dist: docs
 	$(COPYRIGHTER) -r $(EXPORT_DIR)
 	rm -rf $(EXPORT_DIR)/docs/*
 	mv docs/_build/html $(EXPORT_DIR)/docs/
-	cd $(EXPORT_DIR) && python setup.py sdist -k
+	cd $(EXPORT_DIR) && $(PYTHON) setup.py sdist -k
 
 clean:
 	rm -rf build
 	rm -f $(GENERATED_FILES)
-	for d in ${PROTOBUF_SRC_DIRS}; do make -C $${d} clean; done
+	for d in $(PROTOBUF_SRC_DIRS); do make -C $${d} clean; done
 	make -C docs clean
 	cd test && rm -fv *.{out,err,log}
 	find . -regex '.*\(\.pyc\|\.pyo\|~\|\.so\)' -exec rm -fv {} \;
