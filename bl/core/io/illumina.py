@@ -2,16 +2,7 @@ import csv, re
 
 
 class GenomeStudioFinalReport(object):
-  """
 
-  FIXME
-
-  .. code-block:: python
-
-    r = GenomeStudioFinalReport(sample_id, block)
-    r.sample_id
-
-  """
   def __init__(self, sample_id, block):
     self.sample_id = sample_id
     snp = {}
@@ -27,44 +18,33 @@ class GenomeStudioFinalReport(object):
 
 class GenomeStudioFinalReportReader(csv.DictReader):
   """
-  A simple Illumina Genome Studio final report reader.
+  A simple Illumina Genome Studio Final Report reader.
 
   .. code-block:: python
 
    from bl.core.io.illumina import GenomeStudioFinalReportReader as GSReader
    reader = GSReader(open('report.txt'))
-
    print reader.header.keys()
-
    for b in reader.get_sample_iterator():
      print b.sample_id
      for k in b.snp_names():
         print b.snp[k]
-
   """
-  def __init__(self, file_object):
-    """
-    FIXME
-    """
-    magic = file_object.readline()
+  def __init__(self, f):
+    magic = f.readline()
     if not magic.startswith('[Header]'):
-      raise ValueError('%s is not a Genome Studio Final Report'
-                       % file_object.name)
-
+      raise ValueError('%s is not a Genome Studio Final Report' % f.name)
     header = []
-    l = file_object.readline()
-
+    l = f.readline()
     while not l.startswith('[Data]'):
-      # FIXME this is ms-dos sanitation
-      header.append(l.strip())
-      l = file_object.readline()
+      header.append(l.strip())  # ms-dos sanitation
+      l = f.readline()
     else:
       self.header = self.__process_header(header)
-    csv.DictReader.__init__(self, file_object, delimiter='\t')
+    csv.DictReader.__init__(self, f, delimiter='\t')
 
   def __process_header(self, records):
-    # FIXME this is ms-dos sanitation
-    header = dict(re.split('\t+', r) for r in records)
+    header = dict(re.split('\t+', r) for r in records)  # ms-dos sanitation
     return header
 
   def get_sample_iterator(self):

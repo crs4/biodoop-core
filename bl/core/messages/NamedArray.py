@@ -1,10 +1,11 @@
-
-#import details.NamedArray_pb2 as NamedArray_pb
-from details.NamedArray_pb2 import NamedArray
-from details import load_array
-from details import unload_array
+# BEGIN_COPYRIGHT
+# END_COPYRIGHT
 
 import numpy as np
+
+from details.NamedArray_pb2 import NamedArray
+from details import load_array, unload_array
+
 
 def NamedArray_to_msg(my_id, x):
   assert isinstance(my_id, str)

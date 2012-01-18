@@ -1,3 +1,6 @@
+# BEGIN_COPYRIGHT
+# END_COPYRIGHT
+
 """
 Support for the .nib format::
 
@@ -12,11 +15,11 @@ number on another machine). This is followed by a 32-bit number in the
 same format that describes the number of bases in the file. Next, the
 bases themselves are listed, packed two bases to the byte. The first
 base is packed in the high-order 4 bits (nibble); the second base is
-packed in the low-order four bits:
+packed in the low-order four bits::
 
     byte = (base1<<4) + base2 
 
-The numerical representations for the bases are:
+The numerical representations for the bases are::
 
     * 0 - T
     * 1 - C

@@ -1,12 +1,18 @@
-from details.MessageStreamHeader_pb2 import MessageStreamHeader as MessageStreamHeader
-from registry import message_codecs_registry
+# BEGIN_COPYRIGHT
+# END_COPYRIGHT
+
 import json
 
+from details.MessageStreamHeader_pb2 import MessageStreamHeader
+from registry import message_codecs_registry
+
+
 class Encoder(object):
+  
   def encode(self, h):
     """
-    Converts a dict of key values into a MessageStreamHeader object.
-    It expects keys to be strings and values to be encodable by json.
+    Converts a dict into a MessageStreamHeader object. It expects
+    keys to be strings and values to be encodable by json.
     """
     assert isinstance(h, dict)
     m = MessageStreamHeader()
@@ -15,10 +21,12 @@ class Encoder(object):
       kv.key, kv.value = k, json.dumps(v, separators=(',',':'))
     return m
 
+
 class Decoder(object):
+  
   def decode(self, m):
     """
-    Will decode a MessageStreamHeader to a dict.
+    Converts a MessageStreamHeader to a dict.
     """
     assert isinstance(m, MessageStreamHeader)
     h = {}
@@ -30,4 +38,3 @@ class Decoder(object):
 message_codecs_registry.register('core.messages.MessageStreamHeader',
                                  MessageStreamHeader,
                                  Encoder(), Decoder())
-

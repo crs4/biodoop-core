@@ -1,9 +1,9 @@
 SDS 2.3	AD Results	1.0
-Filename	BOX_1_2_3_4_CT_CA_C_361257_10
+Filename	taq_man_ex1
 PlateID	PlateLABEL
 Assay Type	Allelic Discrimination
 Run DateTime	22/05/09 13.50.59
-Operator	Alfred E. Neumann
+Operator	Foo Bar
 
 Sample Information
 Marker Setting Information
@@ -406,5 +406,3 @@ Well	Sample Name	Marker Name	Allele X Rn	Allele Y Rn	Call	Quality Value	Call Typ
 380	P20	C____361257_10_pos4	2.545	0.795	C____361257_10-C	100.0	Manual	Unknown	5428.5806						
 382	P22	C____361257_10_pos4	2.418	0.761	C____361257_10-C	100.0	Manual	Unknown	4956.9497						
 384	P24	C____361257_10_pos4	2.132	0.717	C____361257_10-C	100.0	Manual	Unknown	5362.1675						
-
-

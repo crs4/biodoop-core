@@ -1,8 +1,11 @@
+// BEGIN_COPYRIGHT
+// END_COPYRIGHT
+
 package core_messages;
 
 import "Array.proto";
 
 message NamedArray  {
-  required string id    = 1;  // data id
-  required Array  array = 2;  // array 
+  required string id = 1;
+  required Array array = 2;
 }

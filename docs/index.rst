@@ -25,17 +25,21 @@ FASTA streams and wrappers for BLAST.
 
 Installation:
 
-**FIXME** update dependencies:
+#. install prerequisites:
 
- * protobuf
- * numpy
+  * `NumPy <http://numpy.scipy.org>`_
 
-#. install `Pydoop <http://pydoop.sourceforge.net>`_
+  * `Protocol Buffers <http://code.google.com/p/protobuf>`_
+
+  * `Pydoop <http://pydoop.sourceforge.net>`_
 
 #. get biodoop-core from the `download page <https://sourceforge.net/projects/biodoop/files/>`_
 
-#. unpack the biodoop-core tarball, move to the distribution directory
-   and run::
+#. unpack the biodoop-core tarball
+
+#. build the protobuf code in ``bl/core/messages`` and ``bl/core/gt/messages``
+
+#. move to the distribution's root directory and run::
 
      python setup.py install
 

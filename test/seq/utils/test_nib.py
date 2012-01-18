@@ -1,8 +1,7 @@
 # BEGIN_COPYRIGHT
 # END_COPYRIGHT
 
-import unittest, tempfile, os
-from itertools import izip
+import unittest, os
 
 from bl.core.seq.utils import seq2nib
 

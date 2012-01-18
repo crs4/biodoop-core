@@ -1,3 +1,6 @@
+// BEGIN_COPYRIGHT
+// END_COPYRIGHT
+
 package core_gt_messages;
 
 enum SnpCall {
@@ -7,7 +10,7 @@ enum SnpCall {
   sc_AB = 3;
   sc_BB = 4;
   sc_NOCALL = 5;
-  sc_MAXCALLCODE=6;
+  sc_MAXCALLCODE = 6;
 };
 
 // note: w_AA, w_AB, w_BB are float64 out of the birdseed genotype caller
@@ -23,4 +26,3 @@ message SampleSnpCall {
   required float w_AB = 8;
   required float w_BB = 9;
 };
-

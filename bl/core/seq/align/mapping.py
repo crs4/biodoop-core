@@ -132,19 +132,19 @@ class Mapping(object):
     """
     Return a string indicating symbolically the flags set for this mapping.
     
-    Symbol legend:
+    Symbol legend::
     
-    p: paired                  FPD 0x001
-    P: properly paired         FPP 0x002
-    u: query unmapped          FSU 0x004
-    U: mate unmapped           FMU 0x008
-    r: query on reverse strand FSR 0x010
-    R: mate on reverse strand  FMR 0x020
-    1: first read in a pair    FR1 0x040
-    2: second read in a pair   FR2 0x080
-    s: not a primary alignment FSC 0x100
-    f: fails quality checks    FQC 0x200
-    d: duplicate               FDP 0x400
+      p: paired                  FPD 0x001
+      P: properly paired         FPP 0x002
+      u: query unmapped          FSU 0x004
+      U: mate unmapped           FMU 0x008
+      r: query on reverse strand FSR 0x010
+      R: mate on reverse strand  FMR 0x020
+      1: first read in a pair    FR1 0x040
+      2: second read in a pair   FR2 0x080
+      s: not a primary alignment FSC 0x100
+      f: fails quality checks    FQC 0x200
+      d: duplicate               FDP 0x400
     """
     names = ['p', 'P', 'u', 'U', 'r', 'R', '1', '2', 's', 'f', 'd']
     values = [0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020,
@@ -231,7 +231,7 @@ class Mapping(object):
 
   def remove_mate(self):
     """
-    removes all info pertaining to this mapping's mate.
+    remove all info pertaining to this mapping's mate.
     """
     self.set_properly_paired(False)
     self.set_mate_mapped(True) # turns off the bit
@@ -296,7 +296,7 @@ class SAMMapping(Mapping):
   """
   A mapping implementation for storing SAM data.
 
-  A ``SAMMapping`` object is constructed from a list of SAM fields --
+  A SAMMapping object is constructed from a list of SAM fields --
   see http://samtools.sourceforge.net
   """
 

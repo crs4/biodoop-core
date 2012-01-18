@@ -8,4 +8,9 @@ exclude test/utils/try_pspawner.py
 exclude test/utils/try_guardian.py
 recursive-exclude test/seq/engines *
 
+recursive-include bl/core/messages/proto *
+include bl/core/messages/Makefile
+recursive-include bl/core/gt/messages/proto *
+include bl/core/gt/messages/Makefile
+
 recursive-include docs *

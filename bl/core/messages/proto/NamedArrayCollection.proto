@@ -3,6 +3,6 @@ package core_messages;
 import "Array.proto";
 
 message NamedArrayCollection  {
-  required string id   = 1;  // collection id
+  required string id = 1;    // collection id
   repeated Array array = 2;  // array list
 }

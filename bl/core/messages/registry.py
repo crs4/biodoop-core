@@ -1,19 +1,21 @@
+# BEGIN_COPYRIGHT
+# END_COPYRIGHT
+
 """
-A naive facility for Message Codecs management
-==============================================
-
-FIXME...
-
+A simple facility for message codec management.
 """
 
 class MessageCodecInfo(object):
+  
   def __init__(self, name, klass, encoder, decoder):
     self.name = name
     self.klass = klass
     self.encoder = encoder
     self.decoder = decoder
 
+
 class MessageCodecsRegistry(object):
+  
   def __init__(self):
     self.known_codecs = {}
 

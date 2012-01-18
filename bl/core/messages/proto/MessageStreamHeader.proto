@@ -1,3 +1,6 @@
+// BEGIN_COPYRIGHT
+// END_COPYRIGHT
+
 package core_messages;
 
 message KeyValue {
@@ -8,4 +11,3 @@ message KeyValue {
 message MessageStreamHeader {
   repeated KeyValue key_value = 1;
 }
-

@@ -1,12 +1,12 @@
-from details.Array_pb2 import Array as Array
-
-#import details.Array_pb2 as Array_pb
-from details import load_array
-from details import unload_array
+# BEGIN_COPYRIGHT
+# END_COPYRIGHT
 
 import numpy as np
 
-#
+from details.Array_pb2 import Array
+from details import load_array, unload_array
+
+
 def Array_to_msg(x):
   assert isinstance(x, np.ndarray)
   a = Array()

@@ -1,13 +1,8 @@
-"""
+# BEGIN_COPYRIGHT
+# END_COPYRIGHT
 
+"""
 .. todo::
 
-  missing doc for this module.
-
+  add docs for this module.
 """
-
-
-
-
-
-
