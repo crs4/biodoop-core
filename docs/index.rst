@@ -20,10 +20,18 @@ making them particularly well suited for processing large data sets.
 Core
 ----
 
-Currently, Biodoop's core only contains a few modules for handling
-FASTA streams and wrappers for BLAST.
+Currently, Biodoop's core contains a few modules for handling FASTA
+streams, wrappers for BLAST, I/O modules for some bio formats, a
+module for converting sequences to the `nib format
+<http://genome.ucsc.edu/FAQ/FAQformat.html#format8>`_ and protobuf
+serializers for several objects.
 
-Installation:
+Release Notes
+^^^^^^^^^^^^^
+.. include:: ../CHANGES
+
+Installation
+^^^^^^^^^^^^
 
 #. install prerequisites:
 

@@ -1,5 +1,4 @@
-Release 0.2.0
-=============
+**Release 0.2.0:**
 
 * added genotyping-related sub-package "gt" (for now it just contains protobuf serialization stuff)
 
