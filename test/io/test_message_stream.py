@@ -1,9 +1,6 @@
 # BEGIN_COPYRIGHT
 # END_COPYRIGHT
 
-# FIXME: This is not really a test. Just checking that it is
-# exporting the right interface.
-
 import unittest, tempfile, os
 import itertools as it
 
@@ -27,13 +24,14 @@ class test_message_stream(unittest.TestCase):
 
   def header(self):
     payload_msg_type = 'core.messages.Dummy'
-    header = {'foo' : 'hello',
-              'bar' : [1,2,3],
-              'foobar' : {'a' : 1, 'b' : 'ww', 'c' : 0.33}}
+    header = {
+      'foo': 'hello',
+      'bar': [1,2,3],
+      'foobar': {'a': 1, 'b': 'ww', 'c': 0.33},
+      }
     stream = MessageStreamWriter(self.fn, payload_msg_type, header)
     self.do_check_header(header, stream.header)
     stream.close()
-
     stream = MessageStreamReader(self.fn)
     self.assertEqual(stream.payload_msg_type, payload_msg_type)
     self.do_check_header(header, stream.header)
@@ -53,42 +51,36 @@ class test_message_stream(unittest.TestCase):
 
   def payload_1(self):
     payload_msg_type = 'core.messages.Dummy'
-    header = {'foo' : 'hello', 'bar' : [1,2,3]}
+    header = {'foo': 'hello', 'bar': [1,2,3]}
     stream = MessageStreamWriter(self.fn, payload_msg_type, header)
     self.assertEqual(stream.payload_msg_type, payload_msg_type)
     self.do_check_header(header, stream.header)
-
     N = 10
     data = self.generate_payload_dataset(N)
     for d in data:
       stream.write(d)
     stream.close()
-
     stream = MessageStreamReader(self.fn)
     self.assertEqual(stream.payload_msg_type, payload_msg_type)
     self.do_check_header(header, stream.header)
-
     datax = [stream.read() for i in range(N)]
     stream.close()
     self.do_check_data(data, datax)
 
   def payload_2(self):
     payload_msg_type = 'core.messages.Dummy'
-    header = {'foo' : 'hello', 'bar' : [1,2,3]}
+    header = {'foo': 'hello', 'bar': [1,2,3]}
     stream = MessageStreamWriter(self.fn, payload_msg_type, header)
     self.assertEqual(stream.payload_msg_type, payload_msg_type)
     self.do_check_header(header, stream.header)
-
     N = 10
     data = self.generate_payload_dataset(N)
     for d in data:
       stream.write(d)
     stream.close()
-
     stream = MessageStreamReader(self.fn)
     self.assertEqual(stream.payload_msg_type, payload_msg_type)
     self.do_check_header(header, stream.header)
-
     datax = stream.read(N)
     stream.close()
     self.do_check_data(data, datax)

@@ -1,52 +1,65 @@
 # BEGIN_COPYRIGHT
 # END_COPYRIGHT
 
-# FIXME: This is not really a test. Just checking that it is
-# exporting the right interface.
-
 import unittest, tempfile, os, random
 import itertools as it
 
 from bl.core.io.blob_stream import BlobStreamWriter, BlobStreamReader
 
 
+def data_blob():
+  char = chr(random.randint(ord('A'), ord('Z')))
+  return char * random.randint(10, 1000)
+
+
 class test_blob_stream(unittest.TestCase):
+
+  N = 100
 
   def setUp(self):
     fd, self.fn = tempfile.mkstemp(prefix="bioland_")
     os.close(fd)
+    self.data = [data_blob() for i in xrange(self.N)]
 
   def tearDown(self):
     os.remove(self.fn)
 
-  def read_write(self):
-    N = 100
-    def data_blob():
-      char = chr(random.randint(ord('A'), ord('Z')))
-      return char * random.randint(10, 1000)
-    data = [data_blob() for i in range(N)]
-    bsw = BlobStreamWriter(self.fn)
-    for b in data:
-      bsw.write(b)
-    bsw.close()
+  def test_read_write_fname(self):
+    with BlobStreamWriter(self.fn) as bsw:
+      for b in self.data:
+        bsw.write(b)
+    with BlobStreamReader(self.fn) as bsr:
+      for d in self.data:
+        b = bsr.read()
+        self.assertEqual(b, d)
+    with BlobStreamReader(self.fn) as bsr:
+      for b, d in it.izip(bsr, self.data):
+        self.assertEqual(b, d)
+    with BlobStreamReader(self.fn) as bsr:
+      data2 = bsr.read(len(self.data))
+      for b, d in it.izip(data2, self.data):
+        self.assertEqual(b, d)
 
-    bsr = BlobStreamReader(self.fn)
-    for d in data:
-      b = bsr.read()
-      self.assertEqual(b, d)
+  def test_read_write_fobj(self):
+    with open(self.fn, "w") as f:
+      bsw = BlobStreamWriter(f)
+      for b in self.data:
+        bsw.write(b)
+    with open(self.fn) as f:
+      bsr = BlobStreamReader(f)
+      for d in self.data:
+        b = bsr.read()
+        self.assertEqual(b, d)
+    with open(self.fn) as f:
+      bsr = BlobStreamReader(f)
+      for b, d in it.izip(bsr, self.data):
+        self.assertEqual(b, d)
+    with open(self.fn) as f:
+      bsr = BlobStreamReader(f)
+      data2 = bsr.read(len(self.data))
+      for b, d in it.izip(data2, self.data):
+        self.assertEqual(b, d)
 
-    bsr = BlobStreamReader(self.fn)
-    for b, d in it.izip(bsr, data):
-      self.assertEqual(b, d)
-
-    bsr = BlobStreamReader(self.fn)
-    data2 = bsr.read(len(data))
-    for b, d in it.izip(data2, data):
-      self.assertEqual(b, d)
-
-
-  def runTest(self):
-    self.read_write()
 
 def load_tests(loader, tests, pattern):
   test_cases = (test_blob_stream,)
