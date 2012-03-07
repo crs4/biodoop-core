@@ -28,6 +28,7 @@ class Engine(object):
       self.wrapper.add_opt_mapper("%s.%s" % (self.NAME, opt), flag)
 
   def blastall(self, args=[], opts={}):
-    if "filter" in opts:
-      opts["filter"] = "T" if opts["filter"] else "F"
+    filter_opt = "%s.filter" % self.NAME
+    if filter_opt in opts:
+      opts[filter_opt] = "T" if opts[filter_opt] else "F"
     self.wrapper.run(args, opts)

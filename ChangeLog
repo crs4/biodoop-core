@@ -1,3 +1,8 @@
+2012-03-07  simleo  <simleo@simleo-U36SD>
+
+	* bl/core/seq/engines/blastall_2_2_21.py (Engine.blastall): fixed
+	filter option adjustment.
+
 2011-10-28    <simleo@neuron.crs4.it>
 
 	* bl/core/messages/Dummy.py (Encoder.encode): changed to take
