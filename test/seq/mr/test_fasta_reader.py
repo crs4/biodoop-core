@@ -3,8 +3,12 @@
 import unittest, os, itertools, logging, cStringIO, math, zlib
 
 from pydoop.utils import split_hdfs_path, make_input_split
-from pydoop._pipes import get_JobConf_object
 from pydoop.hdfs import hdfs
+try:
+  import pydoop._pipes as pp  # Pydoop pre-0.5.0
+except ImportError:
+  import pydoop
+  pp = pydoop.import_version_specific_module('_pipes')
 
 from bl.core.utils.test_utils import map_context
 from bl.core.seq.mr.fasta_reader import record_reader
@@ -27,7 +31,6 @@ def build_file(seq_tuples):
     seq_len = len(s)
     for i in xrange(0, seq_len, LINE_LEN):
       f.write("%s\n" % s[i:i+LINE_LEN])
-    n_seq_lines = i
   f.seek(0)
   record_len = len(hdr) + 2 + seq_len + int(math.ceil(float(seq_len)/LINE_LEN))
   return f, record_len
@@ -60,7 +63,7 @@ class TestFastaReader(unittest.TestCase):
     d = dict(zip(self.opt_names, (self.libhdfs_opts, self.log_level,
                                   self.compress_header, self.compress_seq,
                                   self.compression_level)))
-    self.jc = get_JobConf_object(d)
+    self.jc = pp.get_JobConf_object(d)
     
     self.split_offset = 0
     self.split_size = self.n * self.l
@@ -74,7 +77,7 @@ class TestFastaReader(unittest.TestCase):
   def test_settable_parameters(self):
     offset, split_size = 0, 1024  # does not matter for this test
     # default
-    ctx, rr = self.__make_rr({}, offset, split_size)
+    _, rr = self.__make_rr({}, offset, split_size)
     self.assertEqual(rr.libhdfs_opts, "")
     self.assertEqual(rr.log_level, getattr(logging, rr.DEFAULT_LOG_LEVEL))
     self.assertEqual(rr.compress_header, False)
@@ -89,7 +92,7 @@ class TestFastaReader(unittest.TestCase):
     d = dict(zip(self.opt_names, (libhdfs_opts, log_level,
                                   compress_header, compress_seq,
                                   compression_level)))
-    ctx, rr = self.__make_rr(d, offset, split_size)
+    _, rr = self.__make_rr(d, offset, split_size)
     self.assertEqual(rr.log_level, getattr(logging, log_level))
     self.assertEqual(rr.libhdfs_opts, libhdfs_opts)
     self.assertEqual(rr.compress_header, compress_header == "true")
@@ -124,16 +127,10 @@ class TestFastaReader(unittest.TestCase):
     split_size = self.l - 1
     offset = self.n*self.l - split_size
     ctx, rr = self.__make_rr({}, offset, split_size)
-    have_a_record, s_header, s_seq = rr.next()
+    have_a_record, _, _ = rr.next()
     self.assertFalse(have_a_record)
     self.assertAlmostEqual(rr.getProgress(), 1.0)
     self.assertEqual(ctx.counters[self.seq_counter_name], 0)
-
-  def __do_count_seqs(self):
-    file_size = self.n_seqs * self.n
-    return len(sg.get_seq_range(
-      self.n, file_size, self.split_size, self.split_offset
-      ))
   
   def __do_reads_on_split(self, n_seqs):
     print 'offset=%d, split_size=%d' % (self.split_offset, self.split_size)
@@ -177,7 +174,7 @@ class TestFastaReader(unittest.TestCase):
     fs.close()
 
   def __make_rr(self, jc_dict, offset, split_size):
-    jc = get_JobConf_object(jc_dict)
+    jc = pp.get_JobConf_object(jc_dict)
     input_split = make_input_split(self.data_file_name, offset, split_size)
     map_ctx = map_context(jc, input_split)
     return map_ctx, record_reader(map_ctx)
