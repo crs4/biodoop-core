@@ -40,14 +40,17 @@ def encode_genotypes(line, m, M):
 class KinshipBuilder(object):
 
   def __init__(self, n_individuals):
+    self.obs_hom = np.zeros(n_individuals, dtype=np.float32)
+    self.exp_hom = np.zeros(n_individuals, dtype=np.float32)
+    self.present = np.zeros(n_individuals, dtype=np.float32)
     self.lower_v = [np.zeros(i, dtype=np.float32)
                     for i in xrange(n_individuals-1, 0, -1)]
     self.upper_v = [np.zeros(i, dtype=np.float32)
                     for i in xrange(n_individuals-1, 0, -1)]
-    self.obs_hom = np.zeros(n_individuals, dtype=np.float32)
-    self.exp_hom = np.zeros(n_individuals, dtype=np.float32)
-    self.present = np.zeros(n_individuals, dtype=np.float32)
     self.N = n_individuals
+
+  def get_vectors(self):
+    return self.obs_hom, self.exp_hom, self.present, self.lower_v, self.upper_v
 
   def add_contribution(self, gt_vector):
     allele_count = count_alleles(gt_vector)

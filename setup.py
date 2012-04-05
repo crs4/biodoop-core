@@ -112,6 +112,8 @@ setup(
     'bl.core.gt.kinship',
     'bl.core.gt.messages',
     'bl.core.gt.messages.details',
+    'bl.core.gt.mr',
+    'bl.core.gt.mr.kinship',
     'bl.core.io',
     'bl.core.messages',
     'bl.core.messages.details',
@@ -124,6 +126,7 @@ setup(
     'bl.core.seq.stats',
     'bl.core.seq.utils',
     'bl.core.utils',
+    'bl.core.app',
     ],
   cmdclass={"sdist": sdist, "build_py": build_py},
   )
