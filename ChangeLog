@@ -1,3 +1,10 @@
+2012-04-05  simleo  <simleo@simleo-U36SD>
+
+	* bl/core/messages: added KinshipVectors.
+
+	* bl/core/gt/kinship/__init__.py: refactored to allow for easier
+	MapReducing.
+
 2012-03-07  simleo  <simleo@simleo-U36SD>
 
 	* bl/core/seq/engines/blastall_2_2_21.py (Engine.blastall): fixed

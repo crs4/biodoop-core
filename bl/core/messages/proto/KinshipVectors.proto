@@ -1,0 +1,13 @@
+// FIXME: reorganize code, this should be in gt/messages
+
+package core_messages;
+
+import "Array.proto";
+
+message KinshipVectors {
+  required Array obs_hom = 1;
+  required Array exp_hom = 2;
+  required Array present = 3;
+  repeated Array lower_v = 4;
+  repeated Array upper_v = 5;
+}

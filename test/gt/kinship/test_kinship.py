@@ -125,8 +125,7 @@ class TestKinship(unittest.TestCase):
           self.assertEqual(x, exp_x)
 
   def __test_kinship(self, f, expected_k):
-    arrays = kinship.kinship(f)
-    k = kinship.build_k(*arrays)  # TODO: add tests for build_k!
+    k = kinship.kinship(f)  # TODO: add tests for KinshipBuilder.build
     self.assertEqual(k.shape, expected_k.shape)
     for i in xrange(k.shape[0]):
       for j in xrange(k.shape[0]):

@@ -4,8 +4,8 @@
 """
 Tools for computing the kinship matrix of a set of genotypes.
 
-This is essentially a reimplementation of the ``ibs`` function from
-`GenABEL <http://www.genabel.org>`_.
+The reference implementation is the ``ibs`` function from `GenABEL
+<http://www.genabel.org>`_.
 """
 
 import operator, itertools as it
@@ -37,11 +37,57 @@ def encode_genotypes(line, m, M):
 # y = a*x + y --> fblas.saxpy(x, y, x.size, a)
 # axpy(x, y, n=(len(x)-offx)/abs(incx), a=1.0, offx=0, incx=1, offy=0, incy=1)
 
+class KinshipBuilder(object):
+
+  def __init__(self, n_individuals):
+    self.lower_v = [np.zeros(i, dtype=np.float32)
+                    for i in xrange(n_individuals-1, 0, -1)]
+    self.upper_v = [np.zeros(i, dtype=np.float32)
+                    for i in xrange(n_individuals-1, 0, -1)]
+    self.obs_hom = np.zeros(n_individuals, dtype=np.float32)
+    self.exp_hom = np.zeros(n_individuals, dtype=np.float32)
+    self.present = np.zeros(n_individuals, dtype=np.float32)
+    self.N = n_individuals
+
+  def add_contribution(self, gt_vector):
+    allele_count = count_alleles(gt_vector)
+    if len(allele_count) < 2:
+      return
+    (m, mcount), (M, Mcount) = sorted(allele_count.iteritems(),
+                                      key=operator.itemgetter(1))
+    encode_genotypes(gt_vector, m, M)
+    nm = float(mcount+Mcount)
+    p = Mcount / nm
+    pq = p * (1-p)
+    nm /= 2  # number of non-missing genotypes
+    gt_vector = np.array(gt_vector, dtype=np.float32)
+    nan_mask = np.isnan(gt_vector)
+    if nm > 1:
+      self.present += ~nan_mask
+      self.obs_hom += ~nan_mask & (gt_vector != 0.5)
+      self.exp_hom[~nan_mask] += 1.0 - 2*pq*nm/(nm-1)
+    gt_vector -= p
+    np.putmask(gt_vector, nan_mask, 0.)
+    measured = (~nan_mask).astype(np.float32)
+    for i in xrange(self.N-1):
+      fblas.saxpy(gt_vector, self.lower_v[i], self.N-i-1, gt_vector[i]/pq, i+1)
+      fblas.saxpy(measured, self.upper_v[i], self.N-i-1, measured[i], i+1)
+
+  def build(self):
+    k = np.zeros((self.N, self.N))
+    diag = .5 + (self.obs_hom - self.exp_hom) / (self.present - self.exp_hom)
+    np.putmask(k, np.eye(self.N), diag)
+    for i, (lv, uv) in enumerate(it.izip(self.lower_v, self.upper_v)):
+      lv /= uv
+      lv[uv==0.] = -1.
+      k[i+1:,i] = lv
+      k[i,i+1:] = uv
+    return k
+
+
 def kinship(line_stream, comment="\n"):
   """
-  Compute kinship matrix.
-
-  Return number of lines read and kinsh4ip vectors.
+  Compute the kinship matrix for the genotypes in ``line_stream``.
   """
   v_allocated = False
   for line in line_stream:
@@ -50,53 +96,10 @@ def kinship(line_stream, comment="\n"):
     line = line.rstrip().split()
     if not v_allocated:
       n_individuals = len(line)
-      lower_v = [np.zeros(i, dtype=np.float32)
-                 for i in xrange(n_individuals-1, 0, -1)]
-      upper_v = [np.zeros(i, dtype=np.float32)
-                 for i in xrange(n_individuals-1, 0, -1)]
-      obs_hom = np.zeros(n_individuals, dtype=np.float32)
-      exp_hom = np.zeros(n_individuals, dtype=np.float32)
-      present = np.zeros(n_individuals, dtype=np.float32)
+      builder = KinshipBuilder(n_individuals)
       v_allocated = True
-    allele_count = count_alleles(line)
-    if len(allele_count) < 2:
-      continue
-    (m, mcount), (M, Mcount) = sorted(allele_count.iteritems(),
-                                      key=operator.itemgetter(1))
-    encode_genotypes(line, m, M)
-    nm = float(mcount+Mcount)
-    p = Mcount / nm
-    pq = p * (1-p)
-    nm /= 2  # number of non-missing genotypes
-    line = np.array(line, dtype=np.float32)
-    nan_mask = np.isnan(line)
-    if nm > 1:
-      present += ~nan_mask
-      obs_hom += ~nan_mask & (line != 0.5)
-      exp_hom[~nan_mask] += 1.0 - 2*pq*nm/(nm-1)
-    line -= p
-    np.putmask(line, nan_mask, 0.)
-    measured = (~nan_mask).astype(np.float32)
-    for i in xrange(n_individuals-1):
-      fblas.saxpy(line, lower_v[i], n_individuals-i-1, line[i]/pq, i+1)
-      fblas.saxpy(measured, upper_v[i], n_individuals-i-1, measured[i], i+1)
+    builder.add_contribution(line)
   if v_allocated:
-    return obs_hom, exp_hom, present, lower_v, upper_v
+    return builder.build()
   else:
     return None
-
-
-def build_k(obs_hom, exp_hom, present, lower_v, upper_v):
-  N = obs_hom.size
-  assert exp_hom.size == present.size == N
-  assert lower_v[0].size == upper_v[0].size == N-1
-  assert len(lower_v) == len(upper_v) == N-1
-  k = np.zeros((N,N))
-  diag = .5 + (obs_hom-exp_hom) / (present-exp_hom)
-  np.putmask(k, np.eye(N), diag)
-  for i, (lv, uv) in enumerate(it.izip(lower_v, upper_v)):
-    lv /= uv
-    lv[uv==0.] = -1.
-    k[i+1:,i] = lv
-    k[i,i+1:] = uv
-  return k
