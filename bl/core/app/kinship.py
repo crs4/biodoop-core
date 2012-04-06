@@ -94,12 +94,9 @@ def run_mr_app(in_path, out_path, logger):
 def collect_output(mr_out_path, out_path):
   builder = None
   for fn in hdfs.ls(mr_out_path):
-    if not fn.startswith("part-"):
+    if not hdfs.path.basename(fn).startswith("kinship-"):
       continue
-    with hdfs.open(fn) as f:
-      sep = f.read(1)
-      assert sep == "\t"
-      msg = f.read()
+    msg = hdfs.load(fn)
     obs_hom, exp_hom, present, lower_v, upper_v = msg_to_KinshipVectors(msg)
     if builder is None:
       builder = KinshipBuilder(obs_hom.size)
@@ -136,7 +133,8 @@ def make_parser():
 def main(argv):
   parser = make_parser()
   args = parser.parse_args(argv[1:])
-  logger = configure_logging(args.log_level, args.log_file)  
+  logger = configure_logging(args.log_level, args.log_file)
+  MR_CONF["bl.mr.loglevel"] = args.log_level
   logger.debug("command line args: %r" % (args,))
   configure_env(
     hadoop_home=args.hadoop_home, hadoop_conf_dir=args.hadoop_conf_dir

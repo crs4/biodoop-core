@@ -61,10 +61,11 @@ clean:
 	rm -rf build
 	rm -f $(GENERATED_FILES)
 	for d in $(PROTOBUF_SRC_DIRS); do make -C $${d} clean; done
-	make -C docs clean
 	cd test && rm -fv *.{out,err,log}
 	find . -regex '.*\(\.pyc\|\.pyo\|~\|\.so\)' -exec rm -fv {} \;
 	rm -f test/*.{out,err,log}
+	make -C docs clean
+	make -C integration_test clean
 
 distclean: clean
 	rm -rf $(EXPORT_DIR) dist
