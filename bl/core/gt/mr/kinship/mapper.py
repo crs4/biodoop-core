@@ -20,7 +20,7 @@ class Mapper(pp.Mapper):
     pu.jc_configure_int(self, jc, "mapred.task.timeout", "timeout")
     self.logger = logging.getLogger("mapper")
     self.logger.setLevel(self.log_level)
-    self.feedback_interval = self.timeout / 10.
+    self.feedback_interval = self.timeout / 10000.
     self.builder = None
     self.snp_count = 0
     #--- workaround to detect the last record ---
