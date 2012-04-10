@@ -10,9 +10,10 @@ INPUT = "file:%s/input" % THIS_DIR
 OUTPUT = "file:%s/output.msg" % THIS_DIR
 SCRIPT = "%s/../scripts/kinship" % THIS_DIR
 EXPECTED_OUTPUT = "%s/expected_output.msg" % THIS_DIR
+OPTS = "-m 5 -r 2 --log-level DEBUG --local-libhdfs-opts=-Xmx512m --mr-libhdfs-opts=-Xmx128m"
 
 os.system("hadoop dfsadmin -safemode wait")
-os.system("%s --log-level DEBUG %s %s" % (SCRIPT, INPUT, OUTPUT))
+os.system("%s %s %s %s" % (SCRIPT, OPTS, INPUT, OUTPUT))
 
 with hdfs.open(OUTPUT) as f:
   k = msg_to_Array(f.read())

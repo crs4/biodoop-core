@@ -8,12 +8,13 @@ This is a MapReduce implementation of the ``ibs`` function from
 `GenABEL <http://www.genabel.org>`_.
 """
 
-import sys, os, logging, argparse, uuid
+import sys, os, logging, argparse
 from itertools import izip
 
 import pydoop.hdfs as hdfs
 import pydoop.hadut as hadut
 
+from bl.core.utils import random_str
 from bl.core.messages.KinshipVectors import msg_to_KinshipVectors
 from bl.core.messages.Array import Array_to_msg
 from bl.core.gt.kinship import KinshipBuilder
@@ -24,8 +25,7 @@ LOG_FORMAT = '%(asctime)s|%(levelname)-8s|%(message)s'
 LOG_DATEFMT = '%Y-%m-%d %H:%M:%S'
 MR_CONF = {
   "hadoop.pipes.java.recordreader": "true",
-  "hadoop.pipes.java.recordwriter": "true",
-  "mapred.reduce.tasks": "0",
+  "hadoop.pipes.java.recordwriter": "false",
   }
 
 
@@ -36,8 +36,9 @@ def configure_env(**kwargs):
       os.environ[name] = value
       reload_pydoop_modules = True
   if reload_pydoop_modules:
-    for m in hdfs, hadut:
-      reload(m)
+    # this is not intuitive, fix Pydoop
+    reload(hdfs.config)
+    reload(hadut.hu)
 
 
 def configure_logging(log_level, log_file=None):
@@ -72,18 +73,18 @@ def generate_launcher(app_module, export_env=True):
   return "\n".join(lines)
 
 
-def run_mr_app(in_path, out_path, logger):
-  launcher_name = uuid.uuid4().hex
+def run_mr_app(in_path, out_path, launcher_text, logger):
+  launcher_name = random_str()
   logger.debug("launcher_name: %r" % (launcher_name,))
-  launcher_text = generate_launcher("bl.core.gt.mr.kinship")
+  logger.debug("local LIBHDFS_OPTS: %r" % (os.getenv("LIBHDFS_OPTS"),))
   hdfs.dump(launcher_text, launcher_name)
   if in_path.startswith("file:"):
-    hdfs_in_path = uuid.uuid4().hex
+    hdfs_in_path = random_str()
     logger.debug("hdfs_in_path: %r" % (hdfs_in_path,))
     logger.info("copying input to hdfs")
     hdfs.cp(in_path, hdfs_in_path)
     in_path = hdfs_in_path
-  mr_out_path = uuid.uuid4().hex
+  mr_out_path = random_str()
   logger.debug("mr_out_path: %r" % (mr_out_path,))
   logger.info("running MapReduce application")
   hadut.run_pipes(launcher_name, in_path, mr_out_path, properties=MR_CONF)
@@ -119,6 +120,10 @@ def make_parser():
     )
   parser.add_argument('input', metavar="INPUT", help='input hdfs path')
   parser.add_argument('output', metavar="OUTPUT", help='output hdfs path')
+  parser.add_argument('-m', '--mappers', type=int, metavar="INT",
+                      help='number of mappers', default=1)
+  parser.add_argument('-r', '--reducers', type=int, metavar="INT",
+                      help='number of reducers', default=1)
   parser.add_argument('--log-level', metavar="STRING", choices=LOG_LEVELS,
                       help='logging level', default='INFO')
   parser.add_argument('--log-file', metavar="FILE", help='log file')
@@ -126,7 +131,10 @@ def make_parser():
                       help="Hadoop home directory")
   parser.add_argument("--hadoop-conf-dir", metavar="STRING",
                       help="Hadoop configuration directory")
-
+  parser.add_argument("--local-libhdfs-opts", metavar="STRING",
+                      help="JVM options for the libhdfs used by this script")
+  parser.add_argument("--mr-libhdfs-opts", metavar="STRING",
+                      help="JVM options for the libhdfs used by mr tasks")
   return parser
 
 
@@ -135,11 +143,21 @@ def main(argv):
   args = parser.parse_args(argv[1:])
   logger = configure_logging(args.log_level, args.log_file)
   MR_CONF["bl.mr.loglevel"] = args.log_level
+  MR_CONF["mapred.map.tasks"] = str(args.mappers)
+  MR_CONF["mapred.reduce.tasks"] = str(args.reducers)
   logger.debug("command line args: %r" % (args,))
   configure_env(
-    hadoop_home=args.hadoop_home, hadoop_conf_dir=args.hadoop_conf_dir
+    HADOOP_HOME=args.hadoop_home,
+    HADOOP_CONF_DIR=args.hadoop_conf_dir,
+    LIBHDFS_OPTS=args.local_libhdfs_opts,
     )
-  run_mr_app(args.input, args.output, logger)
+  if args.mr_libhdfs_opts:
+    old_libhdfs_opts = os.getenv("LIBHDFS_OPTS")
+    os.environ["LIBHDFS_OPTS"] = args.mr_libhdfs_opts
+  launcher_text = generate_launcher("bl.core.gt.mr.kinship")
+  if args.mr_libhdfs_opts:
+    os.environ["LIBHDFS_OPTS"] = old_libhdfs_opts
+  run_mr_app(args.input, args.output, launcher_text, logger)
   logger.info("all done")
 
 
