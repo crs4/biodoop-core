@@ -77,7 +77,7 @@ class KinshipBuilder(object):
       fblas.saxpy(measured, self.upper_v[i], self.N-i-1, measured[i], i+1)
 
   def build(self):
-    k = np.zeros((self.N, self.N))
+    k = np.zeros((self.N, self.N), dtype=np.float32)
     diag = .5 + (self.obs_hom - self.exp_hom) / (self.present - self.exp_hom)
     np.putmask(k, np.eye(self.N), diag)
     for i, (lv, uv) in enumerate(it.izip(self.lower_v, self.upper_v)):

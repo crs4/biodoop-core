@@ -26,6 +26,8 @@ LOG_DATEFMT = '%Y-%m-%d %H:%M:%S'
 MR_CONF = {
   "hadoop.pipes.java.recordreader": "true",
   "hadoop.pipes.java.recordwriter": "false",
+  "mapred.reduce.tasks.speculative.execution": "false",
+  "mapred.job.name": "kinship",
   }
 
 
@@ -131,21 +133,33 @@ def make_parser():
                       help="Hadoop home directory")
   parser.add_argument("--hadoop-conf-dir", metavar="STRING",
                       help="Hadoop configuration directory")
+  parser.add_argument("--hdfs-user", metavar="STRING",
+                      help="user name for connecting to HDFS")
   parser.add_argument("--local-libhdfs-opts", metavar="STRING",
                       help="JVM options for the libhdfs used by this script")
   parser.add_argument("--mr-libhdfs-opts", metavar="STRING",
                       help="JVM options for the libhdfs used by mr tasks")
+  parser.add_argument("--mapred-child-opts", metavar="STRING",
+                      help="JVM options for MapReduce child tasks")
   return parser
+
+
+def update_mr_conf(args):
+  MR_CONF["bl.mr.loglevel"] = args.log_level
+  if args.hdfs_user:
+    MR_CONF["bl.hdfs.user"] = args.hdfs_user
+  if args.mapred_child_opts:
+    MR_CONF["mapred.child.java.opts"] = args.mapred_child_opts
+  MR_CONF["mapred.map.tasks"] = str(args.mappers)
+  MR_CONF["mapred.reduce.tasks"] = str(args.reducers)
 
 
 def main(argv):
   parser = make_parser()
   args = parser.parse_args(argv[1:])
   logger = configure_logging(args.log_level, args.log_file)
-  MR_CONF["bl.mr.loglevel"] = args.log_level
-  MR_CONF["mapred.map.tasks"] = str(args.mappers)
-  MR_CONF["mapred.reduce.tasks"] = str(args.reducers)
   logger.debug("command line args: %r" % (args,))
+  update_mr_conf(args)
   configure_env(
     HADOOP_HOME=args.hadoop_home,
     HADOOP_CONF_DIR=args.hadoop_conf_dir,
