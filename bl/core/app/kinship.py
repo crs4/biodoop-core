@@ -20,6 +20,17 @@ from bl.core.messages.Array import Array_to_msg
 from bl.core.gt.kinship import KinshipBuilder
 
 
+def configure_env(args):
+  must_reload = False
+  for n in "HADOOP_HOME", "HADOOP_CONF_DIR":
+    v = getattr(args, n.lower())
+    if v:
+      os.environ[n] = v
+      must_reload = True
+  if must_reload:
+    reload(hdfs)
+
+
 LOG_LEVELS = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
 LOG_FORMAT = '%(asctime)s|%(levelname)-8s|%(message)s'
 LOG_DATEFMT = '%Y-%m-%d %H:%M:%S'
@@ -29,18 +40,6 @@ MR_CONF = {
   "mapred.reduce.tasks.speculative.execution": "false",
   "mapred.job.name": "kinship",
   }
-
-
-def configure_env(**kwargs):
-  reload_pydoop_modules = False
-  for name, value in kwargs.iteritems():
-    if value:
-      os.environ[name] = value
-      reload_pydoop_modules = True
-  if reload_pydoop_modules:
-    # this is not intuitive, fix Pydoop
-    reload(hdfs.config)
-    reload(hadut.hu)
 
 
 def configure_logging(log_level, log_file=None):
@@ -135,8 +134,6 @@ def make_parser():
                       help="Hadoop configuration directory")
   parser.add_argument("--hdfs-user", metavar="STRING",
                       help="user name for connecting to HDFS")
-  parser.add_argument("--local-libhdfs-opts", metavar="STRING",
-                      help="JVM options for the libhdfs used by this script")
   parser.add_argument("--mr-libhdfs-opts", metavar="STRING",
                       help="JVM options for the libhdfs used by mr tasks")
   parser.add_argument("--mapred-child-opts", metavar="STRING",
@@ -159,12 +156,8 @@ def main(argv):
   args = parser.parse_args(argv[1:])
   logger = configure_logging(args.log_level, args.log_file)
   logger.debug("command line args: %r" % (args,))
+  configure_env(args)
   update_mr_conf(args)
-  configure_env(
-    HADOOP_HOME=args.hadoop_home,
-    HADOOP_CONF_DIR=args.hadoop_conf_dir,
-    LIBHDFS_OPTS=args.local_libhdfs_opts,
-    )
   if args.mr_libhdfs_opts:
     old_libhdfs_opts = os.getenv("LIBHDFS_OPTS")
     os.environ["LIBHDFS_OPTS"] = args.mr_libhdfs_opts
