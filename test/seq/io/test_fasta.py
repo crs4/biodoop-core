@@ -1,6 +1,6 @@
 # BEGIN_COPYRIGHT
 # END_COPYRIGHT
-import unittest, cStringIO, math, itertools, tempfile, os, shutil
+import unittest, cStringIO, math, itertools, tempfile, os, textwrap
 import bl.core.seq.io.fasta as faio
 
 
@@ -22,10 +22,18 @@ def build_file(seq_tuples):
     seq_len = len(s)
     for i in xrange(0, seq_len, LINE_LEN):
       f.write("%s\n" % s[i:i+LINE_LEN])
-    n_seq_lines = i
   f.seek(0)
   record_len = len(hdr) + 2 + seq_len + int(math.ceil(float(seq_len)/LINE_LEN))
   return f, record_len
+
+
+def dump_tuples(seq_tuples):
+  fd, fn = tempfile.mkstemp()
+  for hdr, s in seq_tuples:
+    line_len = len(s) / 3
+    os.write(fd, ">%s\n%s\n" % (hdr, textwrap.fill(s, line_len)))
+  os.close(fd)
+  return fn
 
 
 class TestFindFirstRecord(unittest.TestCase):
@@ -55,7 +63,25 @@ class TestFindFirstRecord(unittest.TestCase):
         self.f.seek(0)
 
 
-class TestRawFastaReader(unittest.TestCase):
+class CommonReaderTests(unittest.TestCase):
+
+  READER_CLASS = None
+
+  def test_regular_file(self):
+    fn = dump_tuples(SEQ_TUPLES)
+    with open(fn) as f:
+      print
+      print "READER_CLASS: %r" % self.READER_CLASS
+      reader = self.READER_CLASS(f)
+      for (hdr, s), (exp_hdr, exp_s) in itertools.izip(reader, SEQ_TUPLES):
+        self.assertEqual(hdr, exp_hdr)
+        self.assertEqual(s, exp_s)
+    os.unlink(fn)
+
+
+class TestRawFastaReader(CommonReaderTests):
+
+  READER_CLASS = faio.RawFastaReader
 
   def setUp(self):
     self.f, self.l = build_file(SEQ_TUPLES)
@@ -65,7 +91,7 @@ class TestRawFastaReader(unittest.TestCase):
   def __run_test(self, offset, split_size, exp_tuples):
     for bufsize in 1, 15, self.n*self.l:
       faio.BUFSIZE = bufsize
-      reader = faio.RawFastaReader(self.f, offset, split_size)
+      reader = self.READER_CLASS(self.f, offset, split_size)
       tuples = []
       for i, t in enumerate(reader):
         tuples.append(t)
@@ -88,26 +114,16 @@ class TestRawFastaReader(unittest.TestCase):
     content = ">abc>def"
     f.write(content)
     f.seek(0)    
-    reader = faio.RawFastaReader(f, 0, len(content))
+    reader = self.READER_CLASS(f, 0, len(content))
     self.assertRaises(faio.FastaError, reader.next)
 
-  def test_regular_file(self):
-    wd = tempfile.mkdtemp(prefix="bioland_")
-    fn = os.path.join(wd, "temp.fa")
-    f = open(fn, "w+")
-    for hdr, s in SEQ_TUPLES:
-      f.write(">%s\n%s\n" % (hdr, s))
-    f.seek(0)
-    reader = faio.RawFastaReader(f)
-    for (hdr, s), (exp_hdr, exp_s) in itertools.izip(reader, SEQ_TUPLES):
-      self.assertEqual(hdr, exp_hdr)
-      self.assertEqual(s, exp_s)
-    f.close()
-    shutil.rmtree(wd)
+
+class TestSimpleFastaReader(CommonReaderTests):
+  READER_CLASS = faio.SimpleFastaReader
 
 
 def load_tests(loader, tests, pattern):
-  test_cases = (TestFindFirstRecord, TestRawFastaReader)
+  test_cases = (TestFindFirstRecord, TestRawFastaReader, TestSimpleFastaReader)
   suite = unittest.TestSuite()
   for tc in test_cases:
     suite.addTests(loader.loadTestsFromTestCase(tc))

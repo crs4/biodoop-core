@@ -106,3 +106,33 @@ class RawFastaReader(object):
 
   def finished(self):
     return self.__bytes_read >= self.split_size
+
+
+class SimpleFastaReader(object):
+  """
+  FASTA reader for regular file-like objects.
+  """
+  def __init__(self, f):
+    self.f = f
+    self.buffer = []
+    self.finished = False
+
+  def __iter__(self):
+    return self
+
+  def next(self):
+    t = None
+    if self.finished:
+      raise StopIteration
+    try:
+      line = self.f.next()
+    except StopIteration:
+      line = ""
+      self.finished = True
+    line = line.strip()
+    if (self.finished or line.startswith(">")) and self.buffer:
+      t = self.buffer[0][1:], "".join(self.buffer[1:])
+      self.buffer = []
+    if line:
+      self.buffer.append(line)
+    return t or self.next()
