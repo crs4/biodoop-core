@@ -36,6 +36,30 @@ def dump_tuples(seq_tuples):
   return fn
 
 
+class MinimalStream(object):
+
+  def __init__(self, seq_tuples):
+    self.f = sum([[">%s\n" % t[0], "%s\n" % t[1]] for t in seq_tuples], [])
+
+
+class StreamWithReadline(MinimalStream):
+
+  def readline(self):
+    try:
+      return self.f.pop(0)
+    except IndexError:
+      return ""
+
+class StreamWithNext(MinimalStream):
+
+  def __init__(self, seq_tuples):
+    super(StreamWithNext, self).__init__(seq_tuples)
+    self.f = iter(self.f)
+
+  def next(self):
+    return self.f.next()
+
+
 class TestFindFirstRecord(unittest.TestCase):
 
   def setUp(self):
@@ -67,16 +91,18 @@ class CommonReaderTests(unittest.TestCase):
 
   READER_CLASS = None
 
+  def _check_f(self, f, seq_tuples):
+    reader = self.READER_CLASS(f)
+    for (hdr, s), (exp_hdr, exp_s) in itertools.izip(reader, seq_tuples):
+      self.assertEqual(hdr, exp_hdr)
+      self.assertEqual(s, exp_s)
+
   def test_regular_file(self):
     fn = dump_tuples(SEQ_TUPLES)
     with open(fn) as f:
-      print
-      print "READER_CLASS: %r" % self.READER_CLASS
-      reader = self.READER_CLASS(f)
-      for (hdr, s), (exp_hdr, exp_s) in itertools.izip(reader, SEQ_TUPLES):
-        self.assertEqual(hdr, exp_hdr)
-        self.assertEqual(s, exp_s)
+      self._check_f(f, SEQ_TUPLES)
     os.unlink(fn)
+
 
 
 class TestRawFastaReader(CommonReaderTests):
@@ -119,7 +145,16 @@ class TestRawFastaReader(CommonReaderTests):
 
 
 class TestSimpleFastaReader(CommonReaderTests):
+
   READER_CLASS = faio.SimpleFastaReader
+
+  def test_minimal_next(self):
+    f = StreamWithNext(SEQ_TUPLES)
+    self._check_f(f, SEQ_TUPLES)
+
+  def test_minimal_readline(self):
+    f = StreamWithReadline(SEQ_TUPLES)
+    self._check_f(f, SEQ_TUPLES)
 
 
 def load_tests(loader, tests, pattern):

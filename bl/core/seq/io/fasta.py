@@ -111,12 +111,27 @@ class RawFastaReader(object):
 class SimpleFastaReader(object):
   """
   FASTA reader for regular file-like objects.
+
+  Tries to support a minimal file-like protocol.
   """
   def __init__(self, f):
     self.f = f
     self.buffer = []
     self.finished = False
 
+  def __advance(self):
+    if hasattr(self.f, "readline"):
+      line = self.f.readline()
+    elif hasattr(self.f, "next"):
+      try:
+        line = self.f.next()
+      except StopIteration:
+        line = ""
+    else:
+      raise TypeError("input stream is not file-like")
+    self.finished = line == ""
+    return line
+    
   def __iter__(self):
     return self
 
@@ -124,11 +139,7 @@ class SimpleFastaReader(object):
     t = None
     if self.finished:
       raise StopIteration
-    try:
-      line = self.f.next()
-    except StopIteration:
-      line = ""
-      self.finished = True
+    line = self.__advance()
     line = line.strip()
     if (self.finished or line.startswith(">")) and self.buffer:
       t = self.buffer[0][1:], "".join(self.buffer[1:])
