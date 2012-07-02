@@ -1,32 +1,45 @@
 # BEGIN_COPYRIGHT
 # END_COPYRIGHT
 
-from itertools import izip
-import pydoop.pipes as pp
+import logging
+logging.basicConfig(level=logging.INFO)
 
-from bl.core.messages.KinshipVectors import msg_to_KinshipVectors
-from bl.core.messages.KinshipVectors import KinshipVectors_to_msg
-from bl.core.gt.kinship import KinshipBuilder
+import pydoop.pipes as pp
+import pydoop.utils as pu
+
+from bl.core.gt.kinship import KinshipVectors, KinshipBuilder
 
 
 class Reducer(pp.Reducer):
 
-  def __init__(self, context):
-    super(Reducer, self).__init__(context)
+  def __configure(self):
+    jc = self.ctx.getJobConf()
+    pu.jc_configure_log_level(self, jc, "bl.mr.loglevel", "log_level", "INFO")
+    self.logger = logging.getLogger("reducer")
+    self.logger.setLevel(self.log_level)
+
+  def __init__(self, ctx):
+    super(Reducer, self).__init__(ctx)
+    self.ctx = ctx
+    self.__configure()
     self.builder = None
 
-  def reduce(self, context):
-    while context.nextValue():
-      msg = context.getInputValue()
-      obs_hom, exp_hom, present, lower_v, upper_v = msg_to_KinshipVectors(msg)
+  def reduce(self, ctx):
+    while ctx.nextValue():
+      vectors = KinshipVectors.deserialize(ctx.getInputValue())
       if self.builder is None:
-        self.builder = KinshipBuilder(obs_hom.size)
-      self.builder.obs_hom += obs_hom
-      self.builder.exp_hom += exp_hom
-      self.builder.present += present
-      for old_v, v in izip(self.builder.lower_v, lower_v):
-        old_v += v
-      for old_v, v in izip(self.builder.upper_v, upper_v):
-        old_v += v
-    msg = KinshipVectors_to_msg(*self.builder.get_vectors())
-    context.emit(context.getInputKey(), msg)
+        self.builder = KinshipBuilder(vectors)
+      else:
+        self.builder.vectors += vectors
+    if self.builder is None:
+      self.logger.info("no input records")
+    else:
+      self.logger.info("building kinship matrix")
+      k = self.builder.build()
+      payload = KinshipBuilder.serialize(k)
+      self.logger.debug("payload (len=%d): %r [...] %r" % (
+        len(payload), payload[:10], payload[-10:]
+        ))
+      ctx.emit("", payload)
+      # FIXME: KinshipBuilder.serialize is not prepending the array size
+      # FIXME: we need a record writer

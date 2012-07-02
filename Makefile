@@ -65,7 +65,7 @@ clean:
 	find . -regex '.*\(\.pyc\|\.pyo\|~\|\.so\)' -exec rm -fv {} \;
 	rm -f test/*.{out,err,log}
 	make -C docs clean
-	make -C integration_test clean
+	rm -rf integration_test/output
 
 distclean: clean
 	rm -rf $(EXPORT_DIR) dist

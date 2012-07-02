@@ -24,7 +24,7 @@ NO_MISSING = (
   # kinship matrix
   np.array([[ -3./22 ,  3.   ,  3.   ],
             [-11./120,  9./22,  3.   ],
-            [-13./60 , -1./60, 21./22]])
+            [-13./60 , -1./60, 21./22]], dtype=kinship.DTYPE)
   )
 
 MISSING = [
@@ -43,10 +43,10 @@ MISSING = [
   # kinship matrix
   np.array([[  3./26,  2.   , 2.  ],
             [ -1./5 , 27./34, 1.  ],
-            [-11./30,  1./5 , 3./2]])
+            [-11./30,  1./5 , 3./2]], dtype=kinship.DTYPE)
   ]
 
-MISSING_LINE = [  
+MISSING_LINE = [
   # data
   ["AC 00 AA\n",
    "GT TT TT\n",
@@ -62,11 +62,11 @@ MISSING_LINE = [
   # kinship matrix (FIXME - add analytical result, this is from R)
   np.array([[-0.2142857, 1.0, 2.0],
             [-0.4000000, 1.5, 1.0],
-            [-0.3666667, 0.2, 1.5]])
+            [-0.3666667, 0.2, 1.5]], dtype=kinship.DTYPE)
   ]
 
 
-TWO_MISSING = [  
+TWO_MISSING = [
   # data
   ["AC 00 AA\n",
    "GT TT TT\n",
@@ -82,10 +82,10 @@ TWO_MISSING = [
   # kinship matrix (FIXME - add analytical result, this is from R)
   np.array([[-0.2142857, 1.0, 2.0],
             [-0.4000000, 1.5, 1.0],
-            [-0.3666667, 0.2, 1.5]])
+            [-0.3666667, 0.2, 1.5]], dtype=kinship.DTYPE)
   ]
 
-MONOMORPHIC = (  
+MONOMORPHIC = (
   # data
   ["AC AC AA\n",
    "TT TT TT\n",
@@ -101,12 +101,46 @@ MONOMORPHIC = (
   # kinship matrix (FIXME - add analytical result, this is from R)
   np.array([[0.0882352941176471, 2, 2],
             [0.0625, 0.0882352941176471, 2],
-            [-0.125,  -0.125, 0.794117647058824]])
+            [-0.125,  -0.125, 0.794117647058824]], dtype=kinship.DTYPE)
   )
 
 
+def make_vectors(n, dtype):
+  vectors = [np.random.random(n).astype(dtype) for _ in xrange(3)]
+  for _ in xrange(2):
+    vectors.append([])
+    for i in xrange(n-1, 0, -1):
+      vectors[-1].append(np.random.random(i).astype(dtype))
+  return vectors
+
+
+class TestKinshipVectors(unittest.TestCase):
+
+  N = 5
+  DTYPE = kinship.DTYPE
+
+  def test_iadd(self):
+    vectors = make_vectors(self.N, self.DTYPE)
+    inc_vectors = make_vectors(self.N, self.DTYPE)
+    exp_vectors = [vectors[i]+inc_vectors[i] for i in xrange(3)]
+    for i in xrange(3, 5):
+      exp_vectors.append([sum(t) for t in izip(vectors[i], inc_vectors[i])])
+    vectors, inc_vectors, exp_vectors = [
+      kinship.KinshipVectors(*_) for _ in vectors, inc_vectors, exp_vectors
+      ]
+    vectors += inc_vectors    
+    self.assertEqual(vectors, exp_vectors)
+
+  def test_serialize(self):
+    vectors = make_vectors(self.N, self.DTYPE)
+    kv = kinship.KinshipVectors(*vectors)
+    s_kv = kv.serialize()
+    d_kv = kinship.KinshipVectors.deserialize(s_kv)
+    self.assertEqual(d_kv, kv)
+
+
 class TestKinship(unittest.TestCase):
-  
+
   def __test_count_alleles(self, f, expected_count):
     for line, ec in izip(f, expected_count):
       line = line.rstrip().split()
@@ -154,9 +188,16 @@ class TestKinship(unittest.TestCase):
   def test_monomorphic(self):
     self.__test_all(*MONOMORPHIC)
 
+  def test_serialize(self):
+    for tc in NO_MISSING, MISSING, MISSING_LINE, TWO_MISSING, MONOMORPHIC:
+      k = tc[-1]
+      s_k = kinship.KinshipBuilder.serialize(k)
+      d_k = kinship.KinshipBuilder.deserialize(s_k)
+      self.assertTrue(np.array_equal(d_k, k))
+
 
 def load_tests(loader, tests, pattern):
-  test_cases = (TestKinship,)
+  test_cases = (TestKinshipVectors, TestKinship)
   suite = unittest.TestSuite()
   for tc in test_cases:
     suite.addTests(loader.loadTestsFromTestCase(tc))

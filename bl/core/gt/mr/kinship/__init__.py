@@ -12,13 +12,6 @@ import pydoop.pipes as pp
 
 from mapper import Mapper
 from reducer import Reducer
-from record_writer import RecordWriter
-from partitioner import Partitioner
-
 
 def run_task():
-  return pp.runTask(pp.Factory(
-    Mapper, Reducer,
-    record_writer_class=RecordWriter,
-    partitioner_class=Partitioner,
-    ))
+  return pp.runTask(pp.Factory(Mapper, Reducer))

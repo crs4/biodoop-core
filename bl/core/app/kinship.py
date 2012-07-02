@@ -9,26 +9,26 @@ This is a MapReduce implementation of the ``ibs`` function from
 """
 
 import sys, os, logging, argparse
-from itertools import izip
 
 import pydoop.hdfs as hdfs
 import pydoop.hadut as hadut
 
 from bl.core.utils import random_str
-from bl.core.messages.KinshipVectors import msg_to_KinshipVectors
-from bl.core.messages.Array import Array_to_msg
-from bl.core.gt.kinship import KinshipBuilder
+
+
+SEQF_INPUT_FORMAT = "org.apache.hadoop.mapred.SequenceFileInputFormat"
+SEQF_OUTPUT_FORMAT = "org.apache.hadoop.mapred.SequenceFileOutputFormat"
 
 
 def configure_env(args):
-  must_reload = False
+  must_reset = False
   for n in "HADOOP_HOME", "HADOOP_CONF_DIR":
     v = getattr(args, n.lower())
     if v:
       os.environ[n] = v
-      must_reload = True
-  if must_reload:
-    reload(hdfs)
+      must_reset = True
+  if must_reset:
+    hdfs.reset()
 
 
 LOG_LEVELS = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
@@ -36,9 +36,7 @@ LOG_FORMAT = '%(asctime)s|%(levelname)-8s|%(message)s'
 LOG_DATEFMT = '%Y-%m-%d %H:%M:%S'
 MR_CONF = {
   "hadoop.pipes.java.recordreader": "true",
-  "hadoop.pipes.java.recordwriter": "false",
-  "mapred.reduce.tasks.speculative.execution": "false",
-  "mapred.job.name": "kinship",
+  "hadoop.pipes.java.recordwriter": "true",
   }
 
 
@@ -74,57 +72,53 @@ def generate_launcher(app_module, export_env=True):
   return "\n".join(lines)
 
 
-def run_mr_app(in_path, out_path, launcher_text, logger):
+def run_mr_app(args, logger):
+  MR_CONF["bl.mr.loglevel"] = args.log_level
+  if args.hdfs_user:
+    MR_CONF["bl.hdfs.user"] = args.hdfs_user
+  if args.mapred_child_opts:
+    MR_CONF["mapred.child.java.opts"] = args.mapred_child_opts
+  launcher_text = generate_launcher("bl.core.gt.mr.kinship")
+  logger.debug("local LIBHDFS_OPTS: %r" % (os.getenv("LIBHDFS_OPTS"),))
+  temp_path = random_str()
+  logger.debug("running MapReduce step 1")
+  run_step_1(args.input, temp_path, launcher_text, args.mappers, logger)
+  logger.debug("running MapReduce step 2")
+  run_step_2(temp_path, args.output, launcher_text, logger)
+
+
+def run_step_1(in_path, out_path, launcher_text, mappers, logger):
   launcher_name = random_str()
   logger.debug("launcher_name: %r" % (launcher_name,))
-  logger.debug("local LIBHDFS_OPTS: %r" % (os.getenv("LIBHDFS_OPTS"),))
   hdfs.dump(launcher_text, launcher_name)
-  if in_path.startswith("file:"):
-    hdfs_in_path = random_str()
-    logger.debug("hdfs_in_path: %r" % (hdfs_in_path,))
-    logger.info("copying input to hdfs")
-    hdfs.cp(in_path, hdfs_in_path)
-    in_path = hdfs_in_path
-  mr_out_path = random_str()
-  logger.debug("mr_out_path: %r" % (mr_out_path,))
-  logger.info("running MapReduce application")
-  hadut.run_pipes(launcher_name, in_path, mr_out_path, properties=MR_CONF)
-  logger.info("collecting output")
-  collect_output(mr_out_path, out_path)
+  mr_conf = MR_CONF.copy()
+  mr_conf["mapred.map.tasks"] = mappers
+  mr_conf["mapred.output.format.class"] = SEQF_OUTPUT_FORMAT
+  mr_conf["mapred.reduce.tasks"] = "0"
+  mr_conf["mapred.job.name"] = "kinship_1"
+  hadut.run_pipes(launcher_name, in_path, out_path, properties=mr_conf)
 
 
-def collect_output(mr_out_path, out_path):
-  builder = None
-  for fn in hdfs.ls(mr_out_path):
-    if not hdfs.path.basename(fn).startswith("kinship-"):
-      continue
-    msg = hdfs.load(fn)
-    obs_hom, exp_hom, present, lower_v, upper_v = msg_to_KinshipVectors(msg)
-    if builder is None:
-      builder = KinshipBuilder(obs_hom.size)
-    builder.obs_hom += obs_hom
-    builder.exp_hom += exp_hom
-    builder.present += present
-    for old_v, v in izip(builder.lower_v, lower_v):
-      old_v += v
-    for old_v, v in izip(builder.upper_v, upper_v):
-      old_v += v
-  k = builder.build()
-  with hdfs.open(out_path, "w") as fo:
-    fo.write(Array_to_msg(k))
-  
+def run_step_2(in_path, out_path, launcher_text, logger):
+  launcher_name = random_str()
+  logger.debug("launcher_name: %r" % (launcher_name,))
+  hdfs.dump(launcher_text, launcher_name)
+  mr_conf = MR_CONF.copy()
+  mr_conf["mapred.map.tasks"] = "1"  # fall back to one per block
+  mr_conf["mapred.input.format.class"] = SEQF_INPUT_FORMAT
+  mr_conf["mapred.reduce.tasks"] = "1"
+  mr_conf["mapred.job.name"] = "kinship_2"
+  hadut.run_pipes(launcher_name, in_path, out_path, properties=mr_conf)
+
 
 def make_parser():
   parser = argparse.ArgumentParser(
     description="Compute the kinship matrix of a set of genotypes",
-    epilog="NOTE: for input/output on local fs, use the file:/foo/bar format",
     )
   parser.add_argument('input', metavar="INPUT", help='input hdfs path')
   parser.add_argument('output', metavar="OUTPUT", help='output hdfs path')
   parser.add_argument('-m', '--mappers', type=int, metavar="INT",
-                      help='number of mappers', default=1)
-  parser.add_argument('-r', '--reducers', type=int, metavar="INT",
-                      help='number of reducers', default=1)
+                      help='number of mappers', default=2)
   parser.add_argument('--log-level', metavar="STRING", choices=LOG_LEVELS,
                       help='logging level', default='INFO')
   parser.add_argument('--log-file', metavar="FILE", help='log file')
@@ -141,30 +135,18 @@ def make_parser():
   return parser
 
 
-def update_mr_conf(args):
-  MR_CONF["bl.mr.loglevel"] = args.log_level
-  if args.hdfs_user:
-    MR_CONF["bl.hdfs.user"] = args.hdfs_user
-  if args.mapred_child_opts:
-    MR_CONF["mapred.child.java.opts"] = args.mapred_child_opts
-  MR_CONF["mapred.map.tasks"] = str(args.mappers)
-  MR_CONF["mapred.reduce.tasks"] = str(args.reducers)
-
-
 def main(argv):
   parser = make_parser()
   args = parser.parse_args(argv[1:])
   logger = configure_logging(args.log_level, args.log_file)
   logger.debug("command line args: %r" % (args,))
   configure_env(args)
-  update_mr_conf(args)
   if args.mr_libhdfs_opts:
     old_libhdfs_opts = os.getenv("LIBHDFS_OPTS")
     os.environ["LIBHDFS_OPTS"] = args.mr_libhdfs_opts
-  launcher_text = generate_launcher("bl.core.gt.mr.kinship")
   if args.mr_libhdfs_opts:
     os.environ["LIBHDFS_OPTS"] = old_libhdfs_opts
-  run_mr_app(args.input, args.output, launcher_text, logger)
+  run_mr_app(args, logger)
   logger.info("all done")
 
 
