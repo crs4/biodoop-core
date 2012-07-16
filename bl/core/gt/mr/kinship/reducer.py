@@ -36,10 +36,5 @@ class Reducer(pp.Reducer):
     else:
       self.logger.info("building kinship matrix")
       k = self.builder.build()
-      payload = KinshipBuilder.serialize(k)
-      self.logger.debug("payload (len=%d): %r [...] %r" % (
-        len(payload), payload[:10], payload[-10:]
-        ))
-      ctx.emit("", payload)
-      # FIXME: KinshipBuilder.serialize is not prepending the array size
+      ctx.emit("", KinshipBuilder.serialize(k))
       # FIXME: we need a record writer

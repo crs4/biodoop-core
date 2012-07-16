@@ -94,7 +94,7 @@ class KinshipVectors(object):
   def __iadd__(self, other):
     check_size(other, self.size)
     for n in self.VECTORS:
-      setattr(self, n, getattr(self, n)+getattr(other, n))
+      getattr(self, n).__iadd__(getattr(other, n))
     for n in self.TRIANGLES:
       for old_v, v in it.izip(getattr(self, n), getattr(other, n)):
         old_v += v

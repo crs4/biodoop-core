@@ -24,6 +24,11 @@ class Mapper(pp.Mapper):
     pu.jc_configure(self, jc, "mapred.input.format.class", "input_format", "")
     self.is_first_step = self.input_format != SEQF_INPUT_FORMAT
 
+  def __report(self):
+    msg = "%d records processed" % self.record_count
+    self.logger.info(msg)
+    self.ctx.setStatus(msg)
+
   def __init__(self, ctx):
     super(Mapper, self).__init__(ctx)
     self.ctx = ctx
@@ -49,13 +54,12 @@ class Mapper(pp.Mapper):
         self.builder.vectors += vectors
     t = time.time()
     if t - self.prev_t >= self.feedback_interval:
-      msg = "%d records processed" % self.record_count
-      self.logger.info(msg)
-      ctx.setStatus(msg)
+      self.__report()
       self.prev_t = t
 
   def close(self):
     if self.builder:
+      self.__report()
       self.ctx.emit("", self.builder.vectors.serialize())
       self.logger.info("all done")
     else:

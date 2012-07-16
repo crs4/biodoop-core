@@ -1,3 +1,11 @@
+2012-07-16  simleo  <simleo@simleo-U36SD>
+
+	* bl/core/gt/kinship/__init__.py (KinshipVectors.__iadd__):
+	changed to actually add in-place.  This ensures that
+	KinshipBuilder's specific vector references -- e.g.,
+	builder.obs_hom -- are updated as intended after builder.vectors
+	+= other_vectors.
+
 2012-04-05  simleo  <simleo@simleo-U36SD>
 
 	* bl/core/messages: added KinshipVectors.

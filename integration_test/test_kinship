@@ -18,7 +18,10 @@ EXPECTED_OUTPUT = "%s/expected_output.pickle" % THIS_DIR
 OPTS = "-m 5 --log-level DEBUG --mr-libhdfs-opts=-Xmx128m"
 
 os.system("%s dfsadmin -safemode wait" % pydoop.hadoop_exec())
-hdfs.rmr(OUTPUT)
+try:
+  hdfs.rmr(OUTPUT)
+except IOError:
+  pass
 os.system("%s %s %s %s" % (SCRIPT, OPTS, INPUT, OUTPUT))
 
 with hdfs.open("%s/part-00000" % OUTPUT) as f:
