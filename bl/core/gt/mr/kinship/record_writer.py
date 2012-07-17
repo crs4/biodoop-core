@@ -14,7 +14,7 @@ class RecordWriter(pp.RecordWriter):
     pu.jc_configure_int(self, jc, "mapred.task.partition", "part")
     pu.jc_configure(self, jc, "mapred.work.output.dir", "outdir")
     pu.jc_configure(self, jc, "bl.hdfs.user", "user", "")
-    self.out_fn = hdfs.path.join(self.outdir, "kinship-%05d" % self.part)
+    self.out_fn = hdfs.path.join(self.outdir, "part-%05d" % self.part)
 
   def emit(self, key, value):
     hdfs.dump(value, self.out_fn, user=self.user)

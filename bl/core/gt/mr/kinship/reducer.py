@@ -37,4 +37,3 @@ class Reducer(pp.Reducer):
       self.logger.info("building kinship matrix")
       k = self.builder.build()
       ctx.emit("", KinshipBuilder.serialize(k))
-      # FIXME: we need a record writer

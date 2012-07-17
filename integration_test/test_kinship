@@ -25,7 +25,7 @@ except IOError:
 os.system("%s %s %s %s" % (SCRIPT, OPTS, INPUT, OUTPUT))
 
 with hdfs.open("%s/part-00000" % OUTPUT) as f:
-  k = kinship.KinshipBuilder.deserialize(f.read()[1:-1])
+  k = kinship.KinshipBuilder.deserialize(f.read())
 with open(EXPECTED_OUTPUT) as f:
   exp_k = cPickle.load(f)
 print "OK" if np.allclose(k, exp_k) else "ERROR"

@@ -7,10 +7,7 @@ logging.basicConfig(level=logging.INFO)
 import pydoop.pipes as pp
 import pydoop.utils as pu
 
-from bl.core.gt.kinship import KinshipVectors, KinshipBuilder
-
-
-SEQF_INPUT_FORMAT = "org.apache.hadoop.mapred.SequenceFileInputFormat"
+from bl.core.gt.kinship import KinshipBuilder
 
 
 class Mapper(pp.Mapper):
@@ -21,11 +18,11 @@ class Mapper(pp.Mapper):
     self.logger = logging.getLogger("mapper")
     self.logger.setLevel(self.log_level)
     pu.jc_configure_int(self, jc, "mapred.task.timeout", "timeout")
-    pu.jc_configure(self, jc, "mapred.input.format.class", "input_format", "")
-    self.is_first_step = self.input_format != SEQF_INPUT_FORMAT
 
-  def __report(self):
-    msg = "%d records processed" % self.record_count
+  def __report(self, delta_t):
+    msg = "%d records processed (last batch: %.1f s)" % (
+      self.record_count, delta_t
+      )
     self.logger.info(msg)
     self.ctx.setStatus(msg)
 
@@ -41,25 +38,19 @@ class Mapper(pp.Mapper):
   def map(self, ctx):
     v = ctx.getInputValue()
     self.record_count += 1
-    if self.is_first_step:
-      gt_vector = v.split()
-      if self.builder is None:
-        self.builder = KinshipBuilder(len(gt_vector))
-      self.builder.add_contribution(gt_vector)
-    else:
-      vectors = KinshipVectors.deserialize(v)
-      if self.builder is None:
-        self.builder = KinshipBuilder(vectors)
-      else:
-        self.builder.vectors += vectors
+    gt_vector = v.split()
+    if self.builder is None:
+      self.builder = KinshipBuilder(len(gt_vector))
+    self.builder.add_contribution(gt_vector)
     t = time.time()
-    if t - self.prev_t >= self.feedback_interval:
-      self.__report()
+    delta_t = t - self.prev_t
+    if delta_t >= self.feedback_interval:
+      self.__report(delta_t)
       self.prev_t = t
 
   def close(self):
     if self.builder:
-      self.__report()
+      self.__report(time.time() - self.prev_t)
       self.ctx.emit("", self.builder.vectors.serialize())
       self.logger.info("all done")
     else:

@@ -16,10 +16,6 @@ import pydoop.hadut as hadut
 from bl.core.utils import random_str
 
 
-SEQF_INPUT_FORMAT = "org.apache.hadoop.mapred.SequenceFileInputFormat"
-SEQF_OUTPUT_FORMAT = "org.apache.hadoop.mapred.SequenceFileOutputFormat"
-
-
 def configure_env(args):
   must_reset = False
   for n in "HADOOP_HOME", "HADOOP_CONF_DIR":
@@ -36,7 +32,7 @@ LOG_FORMAT = '%(asctime)s|%(levelname)-8s|%(message)s'
 LOG_DATEFMT = '%Y-%m-%d %H:%M:%S'
 MR_CONF = {
   "hadoop.pipes.java.recordreader": "true",
-  "hadoop.pipes.java.recordwriter": "true",
+  "hadoop.pipes.java.recordwriter": "false",
   }
 
 
@@ -80,35 +76,16 @@ def run_mr_app(args, logger):
     MR_CONF["mapred.child.java.opts"] = args.mapred_child_opts
   launcher_text = generate_launcher("bl.core.gt.mr.kinship")
   logger.debug("local LIBHDFS_OPTS: %r" % (os.getenv("LIBHDFS_OPTS"),))
-  temp_path = random_str()
-  logger.debug("running MapReduce step 1")
-  run_step_1(args.input, temp_path, launcher_text, args.mappers, logger)
-  logger.debug("running MapReduce step 2")
-  run_step_2(temp_path, args.output, launcher_text, logger)
-
-
-def run_step_1(in_path, out_path, launcher_text, mappers, logger):
+  logger.debug("running MapReduce application")
   launcher_name = random_str()
   logger.debug("launcher_name: %r" % (launcher_name,))
   hdfs.dump(launcher_text, launcher_name)
   mr_conf = MR_CONF.copy()
-  mr_conf["mapred.map.tasks"] = mappers
-  mr_conf["mapred.output.format.class"] = SEQF_OUTPUT_FORMAT
-  mr_conf["mapred.reduce.tasks"] = "0"
-  mr_conf["mapred.job.name"] = "kinship_1"
-  hadut.run_pipes(launcher_name, in_path, out_path, properties=mr_conf)
-
-
-def run_step_2(in_path, out_path, launcher_text, logger):
-  launcher_name = random_str()
-  logger.debug("launcher_name: %r" % (launcher_name,))
-  hdfs.dump(launcher_text, launcher_name)
-  mr_conf = MR_CONF.copy()
-  mr_conf["mapred.map.tasks"] = "1"  # fall back to one per block
-  mr_conf["mapred.input.format.class"] = SEQF_INPUT_FORMAT
+  mr_conf["mapred.map.tasks"] = args.mappers
+  mr_conf["mapred.compress.map.output"] = "true"
   mr_conf["mapred.reduce.tasks"] = "1"
-  mr_conf["mapred.job.name"] = "kinship_2"
-  hadut.run_pipes(launcher_name, in_path, out_path, properties=mr_conf)
+  mr_conf["mapred.job.name"] = "kinship"
+  hadut.run_pipes(launcher_name, args.input, args.output, properties=mr_conf)
 
 
 def make_parser():
