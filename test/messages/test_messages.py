@@ -11,9 +11,6 @@ from bl.core.messages.registry import message_codecs_registry
 from bl.core.messages.MessageStreamHeader import MessageStreamHeader
 from bl.core.messages.Dummy import Dummy
 
-from bl.core.messages.KinshipVectors import KinshipVectors_to_msg
-from bl.core.messages.KinshipVectors import msg_to_KinshipVectors
-
 
 class TestMessages(unittest.TestCase):
 
@@ -34,18 +31,6 @@ class TestMessages(unittest.TestCase):
     self.assertTrue(isinstance(msg, MessageStreamHeader))
     new_header = codec_info.decoder.decode(msg)
     self.assertEqual(header, new_header)
-
-  def test_kinship_vectors(self):
-    N = 5
-    vectors = [np.random.random(N).astype(np.float32) for _ in xrange(3)]
-    for _ in xrange(2):
-      vectors.append([])
-      for i in xrange(N-1, 0, -1):
-        vectors[-1].append(np.random.random(i).astype(np.float32))
-    msg = KinshipVectors_to_msg(*vectors)
-    unpacked_vectors = msg_to_KinshipVectors(msg)
-    for i in xrange(3):
-      self.assertTrue(np.array_equal(vectors[i], unpacked_vectors[i]))
 
 
 def load_tests(loader, tests, pattern):

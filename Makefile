@@ -13,7 +13,7 @@ GENERATED_FILES = AUTHORS MANIFEST README bl/core/version.py
 PROTOBUF_SRC_DIRS := bl/core/messages bl/core/gt/messages
 
 
-.PHONY: all build build_proto build_py install install_py install_user install_user_py docs docs_py docs_put docs_view dist clean distclean
+.PHONY: all build build_proto build_py install install_py install_user install_user_py docs docs_py docs_put docs_view dist clean distclean uninstall_user
 
 all: build
 
@@ -69,3 +69,7 @@ clean:
 
 distclean: clean
 	rm -rf $(EXPORT_DIR) dist
+
+uninstall_user:
+	rm -rf ~/.local/lib/python$(PY_V)/site-packages/bl/core
+	rm -f ~/.local/lib/python$(PY_V)/site-packages/biodoop_core-*
