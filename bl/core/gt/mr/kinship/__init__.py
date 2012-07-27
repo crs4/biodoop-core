@@ -10,10 +10,11 @@ This is a MapReduce implementation of the ``ibs`` function from
 
 import pydoop.pipes as pp
 
-from mapper import Mapper
+from phase_one_mapper import PhaseOneMapper
 
 class Reducer(pp.Reducer):
   pass
 
+# TODO: add entry point for subsequent jobs
 def run_task():
-  return pp.runTask(pp.Factory(Mapper, Reducer))
+  return pp.runTask(pp.Factory(PhaseOneMapper, Reducer))
