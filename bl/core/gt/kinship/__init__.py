@@ -124,6 +124,16 @@ class KinshipVectors(object):
       vectors.append([np.fromstring(s[j:k], dtype=DTYPE) for j, k in indices])
     return cls(*vectors)
 
+  def __str__(self):
+    buf = []
+    for n in self.VECTORS:
+      buf.append("%s = %s" % (n, getattr(self, n)))
+    for n in self.TRIANGLES:
+      buf.append("%s = [" % n)
+      buf.extend(["  %s" % _ for _ in getattr(self, n)])
+      buf.append("]")
+    return "\n".join(buf)
+
 
 # y = a*x + y --> fblas.saxpy(x, y, x.size, a)
 # axpy(x, y, n=(len(x)-offx)/abs(incx), a=1.0, offx=0, incx=1, offy=0, incy=1)

@@ -8,12 +8,13 @@ This is a MapReduce implementation of the ``ibs`` function from
 `GenABEL <http://www.genabel.org>`_.
 """
 
-import sys, os, logging, argparse
+import sys, os, logging, argparse, zlib
 
 import pydoop.hdfs as hdfs
 import pydoop.hadut as hadut
 
 from bl.core.utils import random_str
+from bl.core.gt.kinship import KinshipVectors, KinshipBuilder
 
 
 def configure_env(args):
@@ -32,7 +33,8 @@ LOG_FORMAT = '%(asctime)s|%(levelname)-8s|%(message)s'
 LOG_DATEFMT = '%Y-%m-%d %H:%M:%S'
 MR_CONF = {
   "hadoop.pipes.java.recordreader": "true",
-  "hadoop.pipes.java.recordwriter": "false",
+  "hadoop.pipes.java.recordwriter": "true",
+  "mapred.output.key.class": "org.apache.hadoop.io.NullWritable",
   }
 
 
@@ -77,15 +79,40 @@ def run_mr_app(args, logger):
   launcher_text = generate_launcher("bl.core.gt.mr.kinship")
   logger.debug("local LIBHDFS_OPTS: %r" % (os.getenv("LIBHDFS_OPTS"),))
   logger.debug("running MapReduce application")
-  launcher_name = random_str()
+  launcher_name, mr_out_dir = random_str(), random_str()
   logger.debug("launcher_name: %r" % (launcher_name,))
+  logger.debug("mr_out_dir: %r" % (mr_out_dir,))
   hdfs.dump(launcher_text, launcher_name)
   mr_conf = MR_CONF.copy()
   mr_conf["mapred.map.tasks"] = args.mappers
-  mr_conf["mapred.compress.map.output"] = "true"
-  mr_conf["mapred.reduce.tasks"] = "1"
+  mr_conf["mapred.output.compress"] = "true"
+  mr_conf["mapred.reduce.tasks"] = "0"
   mr_conf["mapred.job.name"] = "kinship"
-  hadut.run_pipes(launcher_name, args.input, args.output, properties=mr_conf)
+  hadut.run_pipes(launcher_name, args.input, mr_out_dir, properties=mr_conf)
+  return mr_out_dir
+
+
+def collect_output(mr_out_dir, logger):
+  builder = None
+  logger.info("processing MapReduce output")
+  for fn in hdfs.ls(mr_out_dir):
+    if not hdfs.path.basename(fn).startswith("part"):
+      continue
+    with hdfs.open(fn) as f:
+      s = zlib.decompress(f.read())
+    vectors = KinshipVectors.deserialize(s)  # ignores trailing newline char
+    if builder is None:
+      builder = KinshipBuilder(vectors)
+    else:
+      builder.vectors += vectors
+  logger.info("building kinship matrix")
+  return builder.build()
+
+
+def write_output(k, args, logger):
+  logger.info("writing output to %r" % (args.output,))
+  with hdfs.open(args.output, "w") as fo:
+    fo.write(KinshipBuilder.serialize(k))
 
 
 def make_parser():
@@ -93,7 +120,7 @@ def make_parser():
     description="Compute the kinship matrix of a set of genotypes",
     )
   parser.add_argument('input', metavar="INPUT", help='input hdfs path')
-  parser.add_argument('output', metavar="OUTPUT", help='output hdfs path')
+  parser.add_argument('output', metavar="OUTPUT", help='output hdfs file path')
   parser.add_argument('-m', '--mappers', type=int, metavar="INT",
                       help='number of mappers', default=2)
   parser.add_argument('--log-level', metavar="STRING", choices=LOG_LEVELS,
@@ -123,7 +150,9 @@ def main(argv):
     os.environ["LIBHDFS_OPTS"] = args.mr_libhdfs_opts
   if args.mr_libhdfs_opts:
     os.environ["LIBHDFS_OPTS"] = old_libhdfs_opts
-  run_mr_app(args, logger)
+  mr_out_dir = run_mr_app(args, logger)
+  k = collect_output(mr_out_dir, logger)
+  write_output(k, args, logger)
   logger.info("all done")
 
 
