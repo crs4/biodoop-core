@@ -140,9 +140,12 @@ def collect_output(mr_out_dir, logger):
 
 
 def write_output(k, args, logger):
+  logger.debug("kinship matrix: shape=%r" % (k.shape,))
+  logger.info("serializing output")
+  s = KinshipBuilder.serialize(k)
+  logger.debug("serialized matrix: %d bytes" % len(s))
   logger.info("writing output to %r" % (args.output,))
-  with hdfs.open(args.output, "w") as fo:
-    fo.write(KinshipBuilder.serialize(k))
+  hdfs.dump(s, args.output, user=args.hdfs_user)
 
 
 def list_of_int(s):
