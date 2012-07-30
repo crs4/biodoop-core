@@ -35,6 +35,8 @@ MR_CONF = {
   "hadoop.pipes.java.recordreader": "true",
   "hadoop.pipes.java.recordwriter": "true",
   "mapred.output.key.class": "org.apache.hadoop.io.NullWritable",
+  "mapred.output.compress": "true",
+  "mapred.reduce.tasks": "0",
   }
 
 
@@ -70,25 +72,53 @@ def generate_launcher(app_module, export_env=True):
   return "\n".join(lines)
 
 
-def run_mr_app(args, logger):
+def update_mr_conf(args):
   MR_CONF["bl.mr.loglevel"] = args.log_level
-  if args.hdfs_user:
-    MR_CONF["bl.hdfs.user"] = args.hdfs_user
+  MR_CONF["bl.hdfs.user"] = args.hdfs_user
   if args.mapred_child_opts:
     MR_CONF["mapred.child.java.opts"] = args.mapred_child_opts
-  launcher_text = generate_launcher("bl.core.gt.mr.kinship")
-  logger.debug("local LIBHDFS_OPTS: %r" % (os.getenv("LIBHDFS_OPTS"),))
-  logger.debug("running MapReduce application")
+
+
+def run_phase_one(args, logger):
+  launcher_text = generate_launcher("bl.core.gt.mr.kinship.phase_one")
   launcher_name, mr_out_dir = random_str(), random_str()
   logger.debug("launcher_name: %r" % (launcher_name,))
   logger.debug("mr_out_dir: %r" % (mr_out_dir,))
   hdfs.dump(launcher_text, launcher_name)
   mr_conf = MR_CONF.copy()
-  mr_conf["mapred.map.tasks"] = args.mappers
-  mr_conf["mapred.output.compress"] = "true"
-  mr_conf["mapred.reduce.tasks"] = "0"
-  mr_conf["mapred.job.name"] = "kinship"
+  mr_conf["mapred.map.tasks"] = args.mappers[0]
+  mr_conf["mapred.job.name"] = "kinship_phase_one"
   hadut.run_pipes(launcher_name, args.input, mr_out_dir, properties=mr_conf)
+  return mr_out_dir
+
+
+def run_phase_two(mappers, input_, logger):
+  launcher_text = generate_launcher("bl.core.gt.mr.kinship.phase_two")
+  launcher_name, mr_out_dir = random_str(), random_str()
+  logger.debug("launcher_name: %r" % (launcher_name,))
+  logger.debug("mr_out_dir: %r" % (mr_out_dir,))
+  hdfs.dump(launcher_text, launcher_name)
+  mr_conf = MR_CONF.copy()
+  mr_conf["mapred.map.tasks"] = mappers
+  mr_conf["mapred.job.name"] = "kinship_phase_two"
+  hadut.run_pipes(launcher_name, input_, mr_out_dir, properties=mr_conf)
+  return mr_out_dir
+
+
+def run_mr_app(args, logger):
+  logger.debug("local LIBHDFS_OPTS: %r" % (os.getenv("LIBHDFS_OPTS"),))
+  logger.info("running MapReduce application")
+  mr_out_dir = run_phase_one(args, logger)
+  for nm in args.mappers[1:]:
+    input_ = random_str()
+    logger.info("running consolidation step, input=%r" % (input_,))
+    with hdfs.open(input_, "w", user=args.hdfs_user) as fo:
+      ls = [_ for _ in hdfs.ls(mr_out_dir, user=args.hdfs_user)
+            if hdfs.path.basename(_).startswith("part")]
+      logger.debug("found %d data files in %r" % (len(ls), mr_out_dir))
+      for fn in ls:
+        fo.write("%s\n" % hdfs.path.abspath(fn, user=args.hdfs_user))
+    mr_out_dir = run_phase_two(nm, input_, logger)
   return mr_out_dir
 
 
@@ -115,14 +145,18 @@ def write_output(k, args, logger):
     fo.write(KinshipBuilder.serialize(k))
 
 
+def list_of_int(s):
+  return map(int, s.split(","))
+
+
 def make_parser():
   parser = argparse.ArgumentParser(
     description="Compute the kinship matrix of a set of genotypes",
     )
   parser.add_argument('input', metavar="INPUT", help='input hdfs path')
   parser.add_argument('output', metavar="OUTPUT", help='output hdfs file path')
-  parser.add_argument('-m', '--mappers', type=int, metavar="INT",
-                      help='number of mappers', default=2)
+  parser.add_argument('-m', '--mappers', type=list_of_int, default=[2],
+                      metavar="INT[,INT...]", help='number of mappers')
   parser.add_argument('--log-level', metavar="STRING", choices=LOG_LEVELS,
                       help='logging level', default='INFO')
   parser.add_argument('--log-file', metavar="FILE", help='log file')
@@ -130,7 +164,7 @@ def make_parser():
                       help="Hadoop home directory")
   parser.add_argument("--hadoop-conf-dir", metavar="STRING",
                       help="Hadoop configuration directory")
-  parser.add_argument("--hdfs-user", metavar="STRING",
+  parser.add_argument("--hdfs-user", metavar="STRING", default="",
                       help="user name for connecting to HDFS")
   parser.add_argument("--mr-libhdfs-opts", metavar="STRING",
                       help="JVM options for the libhdfs used by mr tasks")
@@ -144,12 +178,15 @@ def main(argv):
   args = parser.parse_args(argv[1:])
   logger = configure_logging(args.log_level, args.log_file)
   logger.debug("command line args: %r" % (args,))
+  # it makes no sense to use less mappers in subsequent phases
+  args.mappers.sort(reverse=True)
   configure_env(args)
   if args.mr_libhdfs_opts:
     old_libhdfs_opts = os.getenv("LIBHDFS_OPTS")
     os.environ["LIBHDFS_OPTS"] = args.mr_libhdfs_opts
   if args.mr_libhdfs_opts:
     os.environ["LIBHDFS_OPTS"] = old_libhdfs_opts
+  update_mr_conf(args)
   mr_out_dir = run_mr_app(args, logger)
   k = collect_output(mr_out_dir, logger)
   write_output(k, args, logger)

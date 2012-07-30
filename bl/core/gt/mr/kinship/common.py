@@ -54,3 +54,7 @@ class BaseMapper(pp.Mapper):
       self.logger.info("all done")
     else:
       self.logger.info("no input records")
+
+
+class Reducer(pp.Reducer):
+  pass
