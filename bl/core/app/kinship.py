@@ -124,10 +124,10 @@ def run_mr_app(args, logger):
 
 def collect_output(mr_out_dir, logger):
   builder = None
-  logger.info("processing MapReduce output")
   for fn in hdfs.ls(mr_out_dir):
     if not hdfs.path.basename(fn).startswith("part"):
       continue
+    logger.info("processing %r" % (fn,))
     with hdfs.open(fn) as f:
       s = zlib.decompress(f.read())
     vectors = KinshipVectors.deserialize(s)  # ignores trailing newline char
