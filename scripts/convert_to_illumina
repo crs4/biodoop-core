@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+
+"""
+Convert raw genotypes to the 'illumina' format read by GenABEL.
+
+`GenABEL tutorial -- Importing data to GenABEL
+<http://www.genabel.org/tutorials/ABEL-tutorial#tth_chApA>`_
+
+FIXME: this is just a rough version
+"""
+
+import sys, uuid, csv
+
+
+INPUT = sys.argv[1]
+PH_OUT = "%s.ph" % INPUT
+GT_OUT = "%s.gt" % INPUT
+
+
+def make_id():
+  return "k_%s" % uuid.uuid4().hex
+
+
+def tsv_writer(f):
+  return csv.writer(f, delimiter="\t", lineterminator="\n")
+
+
+def write_ph():
+  with open(INPUT) as fi:
+    n_samples = len(fi.next().split())
+  sample_ids = [make_id() for _ in xrange(n_samples)]
+  with open(PH_OUT, "w") as fo:
+    writer = tsv_writer(fo)
+    writer.writerow(["id", "sex"])
+    for s_id in sample_ids:
+      writer.writerow([s_id, "0"])
+  return sample_ids
+
+
+def main():
+  sample_ids = write_ph()
+  with open(INPUT) as fi, open(GT_OUT, "w") as fo:
+    writer = tsv_writer(fo)
+    header = ["name", "chr", "pos"]
+    header.extend(sample_ids)
+    writer.writerow(header)
+    for i, line in enumerate(fi):
+      line = line.replace("N", "0")
+      row = [make_id(), "1", str(i+1)]
+      row.extend(line.split())
+      writer.writerow(row)
+
+
+if __name__ == "__main__":
+  main()

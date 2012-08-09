@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+
+"""
+Dump a serialized kinship matrix to a text file.
+
+FIXME: this is just a rough version
+"""
+
+import sys
+import bl.core.gt.kinship as kinship
+
+
+INPUT = sys.argv[1]
+try:
+  FO = open(sys.argv[2], "w")
+except IndexError:
+  FO = sys.stderr
+
+with open(INPUT) as fi:
+  k = kinship.KinshipBuilder.deserialize(fi.read())
+  for row in k:
+    FO.write(" ".join("% 14.7f" % x for x in row)+"\n")

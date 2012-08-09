@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+
+"""
+Local (i.e., no MapReduce) kinship matrix computation.
+
+FIXME: this is just a rough version
+"""
+
+import sys, os
+import bl.core.gt.kinship as kinship
+
+
+INPUT = sys.argv[1]
+
+
+def calc_kinship(input_fn):
+  builder = None
+  with open(input_fn) as fi:
+    for line in fi:
+      line = line.split()
+      if builder is None:
+        builder = kinship.KinshipBuilder(len(line))
+      builder.add_contribution(line)
+  return builder.build()
+
+
+if __name__ == "__main__":
+  k = calc_kinship(INPUT)
+  tag = os.path.splitext(os.path.basename(INPUT))[0]
+  with open("%s.kinship" % tag, "w") as fo:
+    fo.write(kinship.KinshipBuilder.serialize(k))
