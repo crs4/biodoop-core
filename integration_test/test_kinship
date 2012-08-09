@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, cPickle
+import os
 import numpy as np
 os.environ["LIBHDFS_OPTS"] = "-Xmx512m"
 
@@ -13,9 +13,10 @@ N_MAPPERS = os.getenv("N_MAPPERS", "5")
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 INPUT = "file:%s/input" % THIS_DIR
+
 OUTPUT = "file:%s/output" % THIS_DIR
 SCRIPT = "%s/../scripts/kinship" % THIS_DIR
-EXPECTED_OUTPUT = "%s/expected_output.pickle" % THIS_DIR
+EXPECTED_OUTPUT = "%s/expected_output" % THIS_DIR
 OPTS = "-m %s --log-level DEBUG --mr-libhdfs-opts=-Xmx128m" % N_MAPPERS
 
 os.system("%s dfsadmin -safemode wait" % pydoop.hadoop_exec())
@@ -28,5 +29,10 @@ os.system("%s %s %s %s" % (SCRIPT, OPTS, INPUT, OUTPUT))
 with hdfs.open(OUTPUT) as f:
   k = kinship.KinshipBuilder.deserialize(f.read())
 with open(EXPECTED_OUTPUT) as f:
-  exp_k = cPickle.load(f)
-print "OK" if np.allclose(k, exp_k) else "ERROR"
+  exp_k = np.fromfile(f, dtype=np.float32)
+if np.allclose(k.flatten(), exp_k, atol=1e-3):
+  print "OK"
+else:
+  print "ERROR"  
+  with open("mr_kinship", "w") as fo:
+    k.tofile(fo)

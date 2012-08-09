@@ -170,8 +170,8 @@ class KinshipBuilder(object):
     np.putmask(gt_vector, nan_mask, 0.)
     measured = (~nan_mask).astype(DTYPE)
     for i in xrange(self.N-1):
-      fblas.saxpy(gt_vector, self.lower_v[i], self.N-i-1, gt_vector[i]/pq, i+1)
-      fblas.saxpy(measured, self.upper_v[i], self.N-i-1, measured[i], i+1)
+      fblas.saxpy(gt_vector, self.lower_v[i], self.N-i-1, gt_vector[self.N-i-1]/pq)
+      fblas.saxpy(measured, self.upper_v[i], self.N-i-1, measured[self.N-i-1])
 
   def build(self):
     k = np.zeros((self.N, self.N), dtype=DTYPE)
@@ -180,8 +180,8 @@ class KinshipBuilder(object):
     for i, (lv, uv) in enumerate(it.izip(self.lower_v, self.upper_v)):
       lv /= uv
       lv[uv==0.] = -1.
-      k[i+1:,i] = lv
-      k[i,i+1:] = uv
+      k[self.N-i-1,:self.N-i-1] = lv
+      k[:self.N-i-1,self.N-i-1] = uv
     return k
 
   @classmethod

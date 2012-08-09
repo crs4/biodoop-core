@@ -130,6 +130,8 @@ def collect_output(mr_out_dir, logger):
     logger.info("processing %r" % (fn,))
     with hdfs.open(fn) as f:
       s = zlib.decompress(f.read())
+    if s == "":
+      continue
     vectors = KinshipVectors.deserialize(s)  # ignores trailing newline char
     if builder is None:
       builder = KinshipBuilder(vectors)
