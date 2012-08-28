@@ -13,8 +13,12 @@ import sys, os, logging, argparse, zlib
 import pydoop.hdfs as hdfs
 import pydoop.hadut as hadut
 
-from bl.core.utils import random_str
+import bl.core.utils as utils
 from bl.core.gt.kinship import KinshipVectors, KinshipBuilder
+
+
+def random_str(args):
+  return utils.random_str(prefix=args.prefix)
 
 
 def configure_env(args):
@@ -81,7 +85,7 @@ def update_mr_conf(args):
 
 def run_phase_one(args, logger):
   launcher_text = generate_launcher("bl.core.gt.mr.kinship.phase_one")
-  launcher_name, mr_out_dir = random_str(), random_str()
+  launcher_name, mr_out_dir = random_str(args), random_str(args)
   logger.debug("launcher_name: %r" % (launcher_name,))
   logger.debug("mr_out_dir: %r" % (mr_out_dir,))
   hdfs.dump(launcher_text, launcher_name)
@@ -92,9 +96,9 @@ def run_phase_one(args, logger):
   return mr_out_dir
 
 
-def run_phase_two(mappers, input_, logger):
+def run_phase_two(args, mappers, input_, logger):
   launcher_text = generate_launcher("bl.core.gt.mr.kinship.phase_two")
-  launcher_name, mr_out_dir = random_str(), random_str()
+  launcher_name, mr_out_dir = random_str(args), random_str(args)
   logger.debug("launcher_name: %r" % (launcher_name,))
   logger.debug("mr_out_dir: %r" % (mr_out_dir,))
   hdfs.dump(launcher_text, launcher_name)
@@ -110,7 +114,7 @@ def run_mr_app(args, logger):
   logger.info("running MapReduce application")
   mr_out_dir = run_phase_one(args, logger)
   for nm in args.mappers[1:]:
-    input_ = random_str()
+    input_ = random_str(args)
     logger.info("running consolidation step, input=%r" % (input_,))
     with hdfs.open(input_, "w", user=args.hdfs_user) as fo:
       ls = [_ for _ in hdfs.ls(mr_out_dir, user=args.hdfs_user)
@@ -118,7 +122,7 @@ def run_mr_app(args, logger):
       logger.debug("found %d data files in %r" % (len(ls), mr_out_dir))
       for fn in ls:
         fo.write("%s\n" % hdfs.path.abspath(fn, user=args.hdfs_user))
-    mr_out_dir = run_phase_two(nm, input_, logger)
+    mr_out_dir = run_phase_two(args, nm, input_, logger)
   return mr_out_dir
 
 
@@ -165,9 +169,9 @@ def make_parser():
   parser.add_argument('--log-level', metavar="STRING", choices=LOG_LEVELS,
                       help='logging level', default='INFO')
   parser.add_argument('--log-file', metavar="FILE", help='log file')
-  parser.add_argument("--hadoop-home", metavar="STRING",
+  parser.add_argument("--hadoop-home", metavar="DIR",
                       help="Hadoop home directory")
-  parser.add_argument("--hadoop-conf-dir", metavar="STRING",
+  parser.add_argument("--hadoop-conf-dir", metavar="DIR",
                       help="Hadoop configuration directory")
   parser.add_argument("--hdfs-user", metavar="STRING", default="",
                       help="user name for connecting to HDFS")
@@ -175,6 +179,8 @@ def make_parser():
                       help="JVM options for the libhdfs used by mr tasks")
   parser.add_argument("--mapred-child-opts", metavar="STRING",
                       help="JVM options for MapReduce child tasks")
+  parser.add_argument("--prefix", metavar="PATH", default="kinship_tmp_",
+                      help="Use this prefix for temporary HDFS storage")
   return parser
 
 
