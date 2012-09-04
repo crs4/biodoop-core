@@ -16,6 +16,10 @@ from scipy.lib.blas import fblas
 DTYPE = np.dtype(np.float32)
 
 
+class AlleleCountError(Exception):
+  pass
+
+
 def count_alleles(allele_pairs):
   count = {}
   for a in it.chain(*allele_pairs):
@@ -151,6 +155,8 @@ class KinshipBuilder(object):
 
   def add_contribution(self, gt_vector):
     allele_count = count_alleles(gt_vector)
+    if len(allele_count) > 2:
+      raise AlleleCountError("more than 2 alleles: %r" % (allele_count,))
     if len(allele_count) < 2:
       return
     (m, mcount), (M, Mcount) = sorted(allele_count.iteritems(),

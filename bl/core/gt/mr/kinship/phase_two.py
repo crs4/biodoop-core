@@ -8,6 +8,9 @@ This phase is meant to be run on phase one's output when the latter is
 too large for a single process to collect.  Using less mappers than
 there are KinshipVector files allows to reduce the burden of
 assembling the final matrix.
+
+FIXME: phase_two is a misnomer, since it can be run any number of
+times with a progressively reduced number of mappers.
 """
 
 import zlib

@@ -14,13 +14,17 @@ INPUT = sys.argv[1]
 
 
 def calc_kinship(input_fn):
+  AlleleCountError = kinship.AlleleCountError
   builder = None
   with open(input_fn) as fi:
-    for line in fi:
+    for i, line in enumerate(fi):
       line = line.split()
       if builder is None:
         builder = kinship.KinshipBuilder(len(line))
-      builder.add_contribution(line)
+      try:
+        builder.add_contribution(line)
+      except AlleleCountError as e:
+        raise RuntimeError("line %d: %s" % (i+1, e))
   return builder.build()
 
 
