@@ -1,9 +1,11 @@
 # BEGIN_COPYRIGHT
 # END_COPYRIGHT
+
 """Biodoop -- Tools for computational biology.
 
 Biodoop is a collection of tools for computational biology.
 """
+
 import os, datetime
 from distutils.core import setup
 from distutils.errors import DistutilsSetupError
@@ -114,6 +116,7 @@ setup(
     'bl.core.gt.messages.details',
     'bl.core.gt.mr',
     'bl.core.gt.mr.kinship',
+    'bl.core.individual',
     'bl.core.io',
     'bl.core.messages',
     'bl.core.messages.details',
