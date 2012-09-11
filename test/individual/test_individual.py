@@ -2,32 +2,61 @@
 # END_COPYRIGHT
 
 import unittest
-import bl.core.individual as ind
+from bl.core.individual import Individual
+import bl.core.individual.gender as gender
 
 
 class TestIndividual(unittest.TestCase):
 
-  def test_init(self):
-    a_grandpa = ind.Individual("A_GRANDPA", "M")
-    a_grandma = ind.Individual("A_GRANDMA", "F")
-    a_dad = ind.Individual("A_DAD", "M", father=a_grandpa, mother=a_grandma)
-    a_mule = ind.Individual("A_MULE", "F", father=a_grandpa, mother=a_grandma)
-    b_mom = ind.Individual("B_MOM", "F")
-    a_son = ind.Individual("A_SON", "M", father=a_dad, mother=b_mom)
-    #--
-    print
-    print a_grandpa
-    print a_grandma
-    print a_dad
-    print a_mule
-    print b_mom
-    print a_son
-    #--
-    for i in a_grandpa, a_grandma:
-      self.assertEqual(i.children, set([a_dad, a_mule]))
-    for i in a_dad, b_mom:
-      self.assertEqual(i.children, set([a_son]))
+  def setUp(self):
+    #
+    #    GRANDPA --- GRANDMA
+    #             |
+    #          -------
+    #          |     |
+    # MOM --- DAD   UNCLE
+    #      |
+    #      ME
+    #
+    self.grandpa = Individual("GRANDPA", "M")
+    self.grandma = Individual("GRANDMA", "F")
+    self.mom = Individual("MOM", "F")
+    self.dad = Individual("DAD", "M", father=self.grandpa, mother=self.grandma)
+    self.uncle = Individual("UNCLE", father=self.grandpa, mother=self.grandma)
+    self.me = Individual("ME", "M", father=self.dad, mother=self.mom)
 
+  def test_init(self):
+    print
+    print self.grandpa
+    print self.grandma
+    print self.mom
+    print self.dad
+    print self.uncle
+    print self.me
+    self.assertEqual(Individual("GRANDPA", "M"), self.grandpa)
+    for i in self.grandpa, self.grandma:
+      self.assertEqual(i.children, set([self.dad, self.uncle]))
+    for i in self.dad, self.mom:
+      self.assertEqual(i.children, set([self.me]))
+
+  def test_properties(self):
+    self.assertEqual(self.grandpa.gender, gender.MALE)
+    self.grandpa.gender = "unknown"
+    self.assertEqual(self.grandpa.gender, gender.UNKNOWN)
+    self.assertEqual(self.dad.father, self.grandpa)
+    batman = Individual("BATMAN", "M")
+    self.mom.father = batman
+    self.assertEqual(batman.children, set([self.mom]))
+    self.assertEqual(self.dad.father_id, self.grandpa.id)
+    self.assertTrue(batman.father_id is None)
+
+  def test_methods(self):
+    self.assertTrue(self.grandpa.is_male())
+    self.assertTrue(self.grandma.is_female())
+    for predicate in "is_male", "is_female":
+      self.assertFalse(getattr(self.uncle, predicate)())
+    for i in self.grandpa, self.grandma:
+      self.assertTrue(i.is_founder())
 
 def load_tests(loader, tests, pattern):
   test_cases = (TestIndividual,)

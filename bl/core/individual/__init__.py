@@ -22,10 +22,7 @@ class Individual(object):
   def get_gender(self):
     return self.__gender
 
-  def del_gender(self):
-    del self.__gender
-
-  gender = property(get_gender, set_gender, del_gender)
+  gender = property(get_gender, set_gender)
 
   def set_father(self, father):
     self.__father = father
@@ -37,10 +34,7 @@ class Individual(object):
   def get_father(self):
     return self.__father
 
-  def del_father(self):
-    del self.__father
-
-  father = property(get_father, set_father, del_father)
+  father = property(get_father, set_father)
 
   def set_mother(self, mother):
     self.__mother = mother
@@ -52,16 +46,21 @@ class Individual(object):
   def get_mother(self):
     return self.__mother
 
-  def del_mother(self):
-    del self.__mother
+  mother = property(get_mother, set_mother)
 
-  mother = property(get_mother, set_mother, del_mother)
+  @property
+  def father_id(self):
+    return self.father.id if self.father else None
+
+  @property
+  def mother_id(self):
+    return self.mother.id if self.mother else None
 
   def is_male(self):
-    return self.gender == "M"
+    return self.gender == gender_.MALE
 
   def is_female(self):
-    return self.gender == "F"
+    return self.gender == gender_.FEMALE
 
   def is_founder(self):
     return self.father is None and self.mother is None
@@ -75,9 +74,9 @@ class Individual(object):
   def __ne__(self, obj):
     return not self.__eq__(obj)
 
-  def __str__(self):
-    fid = self.father.id if self.father else "None"
-    mid = self.mother.id if self.mother else "None"
+  def __repr__(self):
     return '%s (%s) [%s, %s] {%s}' % (
-      self.id, self.gender, fid, mid, ", ".join(_.id for _ in self.children)
+      self.id, self.gender,
+      self.father_id, self.mother_id,
+      ", ".join(_.id for _ in sorted(self.children))
       )
