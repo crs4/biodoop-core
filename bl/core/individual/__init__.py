@@ -5,19 +5,19 @@
 Tools for handling experimental subjects.
 """
 
+import gender as gender_
+
+
 class Individual(object):
 
-  GENDER_MAP = dict.fromkeys(["FEMALE", "female", "Female", "F", "f"], "F")
-  GENDER_MAP.update(dict.fromkeys(["MALE", "male", "Male", "M", "m"], "M"))
-
-  def __init__(self, id_, gender, father=None, mother=None):
+  def __init__(self, id_, gender=gender_.UNKNOWN, father=None, mother=None):
     self.id = id_
     self.__gender = self.__father = self.__mother = None
     self.gender, self.father, self.mother = gender, father, mother
     self.children = set()
 
   def set_gender(self, gender):
-    self.__gender = self.GENDER_MAP[gender]
+    self.__gender = gender_.MAP[gender]
 
   def get_gender(self):
     return self.__gender
