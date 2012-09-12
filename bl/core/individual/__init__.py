@@ -10,7 +10,7 @@ import gender as gender_
 
 class Individual(object):
 
-  def __init__(self, id_, gender=gender_.UNKNOWN, father=None, mother=None):
+  def __init__(self, id_, gender=None, father=None, mother=None):
     self.id = id_
     self.__gender = self.__father = self.__mother = None
     self.gender, self.father, self.mother = gender, father, mother
