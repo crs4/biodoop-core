@@ -31,7 +31,7 @@ def plot_histo(in_fn, out_fn, bins, cutoff):
 def make_parser():
   parser = argparse.ArgumentParser(description=__doc__.strip())
   parser.add_argument('input', metavar="MATRIX_FILE")
-  parser.add_argument("-b", "--bins", type=int, metavar="INT",
+  parser.add_argument("-b", "--bins", type=int, metavar="INT", default=1000,
                       help="number of bins")
   parser.add_argument("-o", "--output", metavar="IMG_FILE",
                       help="output file (extension -> img type)")
