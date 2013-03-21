@@ -23,7 +23,8 @@ def plot_histo(in_fn, out_fn, bins, cutoff):
   with open(in_fn) as fi:
     k = KinshipBuilder.deserialize(fi.read())
   k = k[np.nonzero(np.tril(k, -1))]
-  k = rm_outliers(k, cutoff)
+  if cutoff:
+    k = rm_outliers(k, cutoff)
   plt.hist(k, bins=bins)
   plt.savefig(out_fn, dpi=300)
 

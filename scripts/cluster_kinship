@@ -60,6 +60,7 @@ def main(argv):
   cp_values = np.array(list(cp_values_stream(k, ped, id_map)), dtype=k.dtype)
   with open(args.output, "w") as fo:
     cp_values.tofile(fo)
+  print "wrote %r" % (args.output,)
 
 
 if __name__ == "__main__":
