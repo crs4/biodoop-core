@@ -6,4 +6,4 @@ from message_stream import MessageStreamReader
 
 
 # import modules that register codecs
-import bl.core.gt.messages.SampleSnpCall
+import bl.core.gt.messages.sample_snp_call

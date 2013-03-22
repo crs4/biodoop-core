@@ -1,7 +1,7 @@
 # BEGIN_COPYRIGHT
 # END_COPYRIGHT
 
-from details.SampleSnpCall_pb2 import SampleSnpCall as SampleSnpCall
+from details.SampleSnpCall_pb2 import SampleSnpCall
 from bl.core.messages.registry import message_codecs_registry
 
 
