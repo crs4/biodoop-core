@@ -72,8 +72,11 @@ class MessageStreamReader(BlobStreamReader):
     payload = self.pc_info.klass()
     if n == 1:
       blob = super(MessageStreamReader, self).read(n)
-      payload.ParseFromString(blob)
-      res = self.pc_info.decoder.decode(payload)
+      if blob:
+        payload.ParseFromString(blob)
+        res = self.pc_info.decoder.decode(payload)
+      else:
+        res = None
     else:
       res = []
       for blob in super(MessageStreamReader, self).read(n):
