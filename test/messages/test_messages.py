@@ -21,7 +21,9 @@ class TestMessages(unittest.TestCase):
     msg = codec_info.encoder.encode(*v)
     self.assertTrue(isinstance(msg, Dummy))
     new_v = codec_info.decoder.decode(msg)
-    self.assertEqual(v, new_v)
+    for i in xrange(2):
+      self.assertEqual(v[i], new_v[i])
+    self.assertAlmostEqual(v[2], new_v[2])
 
   def test_message_stream_header(self):
     msg_name = 'core.messages.MessageStreamHeader'
