@@ -29,6 +29,10 @@ FIELDS = REQUIRED_FIELDS + OPTIONAL_FIELDS
 FIELDNAMES = [f[0] for f in FIELDS]
 
 
+class BedError(Exception):
+    pass
+
+
 class BedFile(object):
 
     PARAMS = {"delimiter": "\t", "lineterminator": os.linesep}
@@ -62,9 +66,30 @@ class BedFile(object):
 
     def next(self):
         r = self.__wrapper.next()
-        for fname, ftype in FIELDS:
+        for fname, ftype in REQUIRED_FIELDS:
+            if r[fname] is None:
+                raise BedError("at least 3 tab-separated fields are required")
             r[fname] = ftype(r[fname])
+        for fname, ftype in OPTIONAL_FIELDS:
+            if r[fname] is not None:
+                r[fname] = ftype(r[fname])
         return r
+
+    def writerow(self, row):
+        out_row = {}
+        for fname, _ in REQUIRED_FIELDS:
+            value = row.get(fname)
+            if value is None:
+                raise BedError("missing required field '%s'" % fname)
+            out_row[fname] = str(value)
+        for fname, ftype in OPTIONAL_FIELDS:
+            value = row.get(fname)
+            if value is None:
+                break  # no holes allowed
+            if ftype == cs_int:
+                value = ",".join(map (str, value))
+            out_row[fname] = str(value)
+        self.__wrapper.writerow(out_row)
 
     def __iter__(self):
         return self
