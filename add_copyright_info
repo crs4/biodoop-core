@@ -1,0 +1,11 @@
+#!/bin/bash
+
+die() {
+    echo $1 1>&2
+    exit 1
+}
+
+type copyrighter >/dev/null 2>&1 || die "ERROR: install copyrighter from ac-dc/tools"
+
+copyrighter -p $(cat NAME) -n notice_template.txt CRS4 \
+    -y 2009 --end-year $(date +'%Y') -r --exclude-dirs=".svn,.git,.hg"

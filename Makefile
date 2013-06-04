@@ -2,16 +2,8 @@ PYTHON = python
 export PROTOC = protoc
 
 EXPORT_DIR = svn_export
-APP = $(shell cat NAME)
-COPYRIGHT_OWNER = CRS4
-NOTICE_TEMPLATE = notice_template.txt
-COPYRIGHTER = copyrighter -p $(APP) -n $(NOTICE_TEMPLATE) $(COPYRIGHT_OWNER)
-# install copyrighter >=0.4.0 from ac-dc/tools/copyrighter
-
 GENERATED_FILES = AUTHORS MANIFEST README bl/core/version.py
-
 PROTOBUF_SRC_DIRS := bl/core/messages bl/core/gt/messages
-
 
 .PHONY: all build build_proto build_py install install_py install_user install_user_py docs docs_py docs_put docs_view dist clean distclean uninstall_user
 
@@ -52,7 +44,6 @@ docs_view: docs
 
 dist: docs
 	rm -rf $(EXPORT_DIR) && svn export . $(EXPORT_DIR)
-	$(COPYRIGHTER) -r $(EXPORT_DIR)
 	rm -rf $(EXPORT_DIR)/docs/*
 	mv docs/_build/html $(EXPORT_DIR)/docs/
 	cd $(EXPORT_DIR) && $(PYTHON) setup.py sdist -k
