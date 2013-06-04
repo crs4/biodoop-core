@@ -3,7 +3,7 @@ export PROTOC = protoc
 PY_V := $(shell python -c 'import sys; print "%d.%d" % sys.version_info[:2]')
 
 EXPORT_DIR = svn_export
-GENERATED_FILES = AUTHORS MANIFEST README bl/core/version.py
+GENERATED_FILES = AUTHORS MANIFEST bl/core/version.py
 PROTOBUF_SRC_DIRS := bl/core/messages bl/core/gt/messages
 
 .PHONY: all build build_proto build_py install install_py install_user install_user_py docs docs_py docs_put docs_view dist clean distclean uninstall_user
