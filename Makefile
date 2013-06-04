@@ -1,5 +1,6 @@
 PYTHON = python
 export PROTOC = protoc
+PY_V := $(shell python -c 'import sys; print "%d.%d" % sys.version_info[:2]')
 
 EXPORT_DIR = svn_export
 GENERATED_FILES = AUTHORS MANIFEST README bl/core/version.py
