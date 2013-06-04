@@ -82,15 +82,6 @@ def write_authors(filename="AUTHORS"):
       f.write(" * %s <%s>\n" % (name, email))
 
 
-def write_readme(filename="README"):
-  if os.path.exists(filename) and mtime(__file__) <= mtime(filename):
-    return
-  with open(filename, "w") as f:
-    f.write("%s\n" % DESCRIPTION)
-    f.write("%s\n\n" % ("=" * len(DESCRIPTION)))
-    f.write("Copyright %d CRS4. Docs are in docs/html.\n" % CURRENT_YEAR)
-
-
 def write_version(filename="bl/core/version.py"):
   if os.path.exists(filename) and mtime("VERSION") <= mtime(filename):
     return
@@ -108,7 +99,6 @@ class build_py(du_build_py):
 class sdist(du_sdist):
   def run(self):
     write_authors()
-    write_readme()
     du_sdist.run(self)
 
 

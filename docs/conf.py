@@ -13,6 +13,7 @@
 
 import sys, os, datetime
 
+FIRST_RELEASE_YEAR = 2009
 CURRENT_YEAR = datetime.datetime.now().year
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -43,7 +44,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'biodoop'
-copyright = u'%d, CRS4' % CURRENT_YEAR
+copyright = u'%d-%d, CRS4' % (FIRST_RELEASE_YEAR, CURRENT_YEAR)
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
