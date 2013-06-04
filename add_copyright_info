@@ -7,5 +7,5 @@ die() {
 
 type copyrighter >/dev/null 2>&1 || die "ERROR: install copyrighter from ac-dc/tools"
 
-copyrighter -p $(cat NAME) -n notice_template.txt CRS4 \
-    -y 2009 --end-year $(date +'%Y') -r --exclude-dirs=".svn,.git,.hg"
+copyrighter -r --keep-tags -p $(cat NAME) -n notice_template.txt CRS4 \
+    -y 2009 --end-year $(date +'%Y') --exclude-dirs=".svn,.git,.hg" .
