@@ -84,13 +84,28 @@ class TestRead(unittest.TestCase):
 class TestWrite(unittest.TestCase):
 
     def setUp(self):
-        pass
+        fields = "chrom", "chromStart", "chromEnd", "name", "score", "strand"
+        self.data = [
+            dict(zip(fields, ("chr1", 1, 3, "n0", 0, '+'))),
+            dict(zip(fields, ("chr2", 5, 9, "n1", 1, '-'))),
+            ]
+        fd, self.fn = tempfile.mkstemp(prefix="bl_test_")
+        os.close(fd)
+        with bed.open(self.fn, "w") as fo:
+            for r in self.data:
+                fo.writerow(r)
 
     def tearDown(self):
-        pass
+        os.remove(self.fn)
 
     def runTest(self):
-        print "\n  *** TBD ***"
+        with bed.open(self.fn) as fi:
+            records = [r for r in fi]
+        self.assertEqual(len(records), len(self.data))
+        for r1, r2 in zip(records, self.data):
+            for k, v in r2.iteritems():
+                self.assertTrue(k in r1)
+                self.assertEqual(r1[k], v)
 
 
 def load_tests(loader, tests, pattern):

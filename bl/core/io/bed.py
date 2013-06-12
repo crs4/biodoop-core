@@ -50,6 +50,12 @@ FIELDS = REQUIRED_FIELDS + OPTIONAL_FIELDS
 FIELDNAMES = [f[0] for f in FIELDS]
 
 
+class DictWriter(csv.DictWriter):
+
+    def _dict_to_list(self, rowdict):
+        return [_ for _ in csv.DictWriter._dict_to_list(self, rowdict) if _]
+
+
 class BedError(Exception):
     pass
 
@@ -62,7 +68,7 @@ class BedFile(object):
         if mode == "r":
             wrapper_type = csv.DictReader
         elif mode == "w" or mode == "a":
-            wrapper_type = csv.DictWriter
+            wrapper_type = DictWriter
         else:
             raise ValueError("opening mode '%s' not supported" % mode)
         self.f = __builtin__.open(name, mode, buffering)
