@@ -118,3 +118,30 @@ class IllSNPReader(csv.DictReader):
         if open:
           yield line
     csv.DictReader.__init__(self, ill_filter(f))
+
+
+class GenomeStudioSampleSheetReader(csv.DictReader):
+  """
+  A simple Illumina Genome Studio SampleSheet reader.
+  """
+  def __init__(self, f):
+    magic = f.readline()
+    if not magic.startswith('[Header]'):
+      raise ValueError('%s is not a Genome Studio SampleSheet' % f.name)
+    header = []
+    l = f.readline()
+    while not l.startswith('[Data]'):
+      header.append(l.strip())  # ms-dos sanitation
+      l = f.readline()
+    else:
+      self.header = self.__process_header(header)
+    csv.DictReader.__init__(self, f, delimiter=',')
+
+  def __process_header(self, records):
+    header = dict((r.split(',')[0], r.split(',')[1]) for r in records)
+    return header
+
+  def get_chip_type(self):
+    # convert to string compatible with the kb enum.    
+    chip_type = self.header['A'].replace('.bpm', '').replace('-', '_')
+    return chip_type
