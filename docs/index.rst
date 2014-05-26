@@ -37,7 +37,7 @@ Installation
 
   * `NumPy <http://numpy.scipy.org>`_
 
-  * `SciPy <http://www.scipy.org/scipylib/index.html>`
+  * `SciPy <http://www.scipy.org/scipylib/index.html>`_
 
   * `Protocol Buffers <http://code.google.com/p/protobuf>`_
 
