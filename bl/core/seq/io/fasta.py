@@ -154,14 +154,14 @@ class SimpleFastaReader(object):
     return self
 
   def next(self):
-    t = None
-    if self.finished:
-      raise StopIteration
-    line = self.__advance()
-    line = line.strip()
-    if (self.finished or line.startswith(">")) and self.buffer:
-      t = self.buffer[0][1:], "".join(self.buffer[1:])
-      self.buffer = []
-    if line:
-      self.buffer.append(line)
-    return t or self.next()
+    while True:
+      if self.finished:
+        raise StopIteration
+      line = self.__advance().strip()
+      if (self.finished or line.startswith(">")) and self.buffer:
+        t = self.buffer[0][1:], "".join(self.buffer[1:])
+        self.buffer = [line]
+        break
+      else:
+        self.buffer.append(line)
+    return t

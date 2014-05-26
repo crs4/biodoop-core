@@ -20,6 +20,7 @@
 # END_COPYRIGHT
 import unittest, cStringIO, math, itertools, tempfile, os, textwrap
 import bl.core.seq.io.fasta as faio
+from bl.core.utils.random_ext import sample_wr
 
 
 # All record titles must be the same size for the seq_size trick to work
@@ -173,6 +174,20 @@ class TestSimpleFastaReader(CommonReaderTests):
   def test_minimal_readline(self):
     f = StreamWithReadline(SEQ_TUPLES)
     self._check_f(f, SEQ_TUPLES)
+
+  def test_long_seq(self):
+    line_len, n_lines = 70, 5000
+    hdr, seq = "foo", []
+    fd, fn = tempfile.mkstemp()
+    os.write(fd, ">%s\n" % hdr)
+    for i in xrange(n_lines):
+      line = "".join(sample_wr("ACGT", line_len))
+      os.write(fd, "%s\n" % line)
+      seq.append(line)
+    os.close(fd)
+    with open(fn) as f:
+      self._check_f(f, [(hdr, "".join(seq))])
+    os.unlink(fn)
 
 
 def load_tests(loader, tests, pattern):
