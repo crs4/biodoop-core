@@ -21,7 +21,7 @@
 
 import uuid
 
-from null_logger import NullLogger
+from log_utils import NullLogger, get_logger, LOG_LEVELS
 from longest_subs import longest_subs
 
 

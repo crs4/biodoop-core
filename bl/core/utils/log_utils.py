@@ -18,14 +18,43 @@
 # biodoop-core.  If not, see <http://www.gnu.org/licenses/>.
 # 
 # END_COPYRIGHT
+
+"""
+Utilities for logging.
+"""
 import logging
 
-class NullHandler(logging.Handler):
+
+LOG_FORMAT = "%(asctime)s|%(levelname)-8s|%(message)s"
+LOG_DATEFMT = "%Y-%m-%d %H:%M:%S"
+LOG_LEVELS = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+
+
+class _NullHandler(logging.Handler):
   def emit(self, record):
     pass
+
 
 class NullLogger(logging.Logger):
   def __init__(self):
     logging.Logger.__init__(self, "null")
     self.propagate = 0
-    self.handlers = [NullHandler()]
+    self.handlers = [_NullHandler()]
+
+
+def get_logger(name, level="WARNING", filename=None, mode="a"):
+  logger = logging.getLogger(name)
+  if not isinstance(level, int):
+    try:
+      level = getattr(logging, level)
+    except AttributeError:
+      raise ValueError("unsupported literal log level: %s" % level)
+    logger.setLevel(level)
+  if filename:
+    handler = logging.FileHandler(filename, mode=mode)
+  else:
+    handler = logging.StreamHandler()
+  formatter = logging.Formatter(LOG_FORMAT, datefmt=LOG_DATEFMT)
+  handler.setFormatter(formatter)
+  logger.addHandler(handler)
+  return logger
